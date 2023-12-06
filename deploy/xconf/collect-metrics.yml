@@ -1,0 +1,58 @@
+---
+environment:
+  internal_mysql:
+    host: 10.2.12.120
+    port: 3306
+    database: thanos
+    user: root
+    password: 1aba8Feb504Ksdasaasdasdasoiasudoiasudd
+
+internal:
+  server:
+    listen: 0.0.0.0
+    port: 9099
+    scrapeInterval: 36s
+  supervisor:
+    state: RUNNING
+    logs: /var/log/supervisor/supervisord.log
+    # localhost or 127.0.0.1
+    listen: 10.2.12.120
+    port: 9001
+    version: "3.0"
+
+  metrics:
+    # 收集节点指标
+    node:
+      cpu: 
+        collectInterval: 3600s
+      mem: 
+        collectInterval: 3600s
+      disk: 
+        collectInterval: 3600s
+    # 收集服务指标
+    server:
+      doris:
+        # 收集频率 & 扫描历史日志 -> (当前时间 - collectInterval)
+        collectInterval: 3600s
+        keyWord: "stopped: doris"
+        subServer:
+          - doris-fe
+          - doris-be
+        metrics:
+          restart: 
+            name: doris_restart_count
+            labels: 
+              - hostname
+              - server
+          tablet: 
+            name: doris_tablet
+            labels:
+              - "database"
+              - "table"
+              - "partition_name"
+              - "size"
+              - "replication_num"
+              - "health"
+      storagex:
+        subServer:
+          - storagex
