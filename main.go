@@ -1,56 +1,38 @@
 package main
 
 import (
-	"collect-metrics/collector"
-	"collect-metrics/common"
-	"collect-metrics/config"
-	cmlog "collect-metrics/log"
-	"flag"
+	_ "collect-metrics/docs"
+	"collect-metrics/handler"
+	"collect-metrics/service"
 	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func dorisHandler(config *config.Config) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := collector.Doris(config)
-		if err != nil {
-			cmlog.Error(err.Error())
-			return
-		}
-		// get restart & tablet metrics
-		promhttp.Handler().ServeHTTP(w, r)
-	}
+func SetRouter(metricHandler *handler.MetricHandler) *gin.Engine {
+	r := gin.New()
+	r.GET("/swag/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/tcp", metricHandler.TCP)
+	r.GET("process", metricHandler.Process)
+	r.GET("sessions", metricHandler.Session)
+	return r
 }
 
-var (
-	configPath = flag.String("config", common.COLLECT_METRICS_CONFIG_PATH, "use configuration")
-)
-
 func main() {
-	flag.Parse()
-	globalConfig, err := config.LoadInternalConfig(*configPath)
-	if err != nil {
-		cmlog.Error(err.Error())
+	newMetricService := service.NewMetricImpl()
+	r := SetRouter(handler.NewMetricHandler(newMetricService, "name", 21))
+	svr := &http.Server{
+		Addr:    fmt.Sprintf(":%d", 8080),
+		Handler: r,
 	}
-
-	// 启动http服务
-	mux := http.NewServeMux()
-	mux.HandleFunc("/doris", dorisHandler(globalConfig))
-	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", globalConfig.Internal.Server.Listen, globalConfig.Internal.Server.Port),
-		Handler: mux,
-	}
-	fmt.Println(
-		fmt.Sprintf(
-			"Server is running on http://%s:%d",
-			globalConfig.Internal.Server.Listen,
-			globalConfig.Internal.Server.Port,
-		),
-	)
-	err = server.ListenAndServe()
+	err := svr.ListenAndServe()
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Panic(
+			fmt.Sprintf("Starting server failed with %s", err),
+		)
 	}
 }
