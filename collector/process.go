@@ -13,7 +13,7 @@ import (
 // @Accept json
 // @Produce json
 // @Router /test [get]
-func TianCiwang(c *gin.Context) {
+func ProcessGuage(c *gin.Context) {
 	fmt.Println("TianCiwang")
 	c.JSON(200, gin.H{
 		"message": "ok",

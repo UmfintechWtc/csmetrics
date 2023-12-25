@@ -24,4 +24,5 @@ metrics:
     # 获取ssh session会话数量
     tty:
       scrape_interval: 36s
-    
+      labels:
+        - "user"
