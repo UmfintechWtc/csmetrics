@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -102,4 +103,12 @@ func CurrentTime(s time.Duration) string {
 	previousTime := time.Now().Add(-s)
 	formattedPreviousTime := previousTime.Format("2006-01-02 15:04:05")
 	return formattedPreviousTime
+}
+
+func RandomInt() float64 {
+	rand.Seed(time.Now().UnixNano())
+
+	// 生成一个1到100的随机数
+	randomNumber := rand.Intn(100) + 1
+	return float64(randomNumber)
 }

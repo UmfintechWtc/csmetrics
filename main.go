@@ -3,28 +3,26 @@ package main
 import (
 	_ "collect-metrics/docs"
 	"collect-metrics/handler"
-	"collect-metrics/service"
 	"fmt"
 	"log"
 	"net/http"
 
+	p "collect-metrics/client/prometheus"
+
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func SetRouter(metricHandler *handler.MetricHandler) *gin.Engine {
+func SetRouter(prom *handler.PrometheusHandler) *gin.Engine {
 	r := gin.New()
-	r.GET("/swag/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.GET("/tcp", metricHandler.TCP)
-	r.GET("process", metricHandler.Process)
-	r.GET("sessions", metricHandler.Session)
+	r.Use(gin.WrapH(promhttp.Handler()))
+	r.GET("/tcp", prom.Gauge)
 	return r
 }
 
 func main() {
-	newMetricService := service.NewMetricImpl()
-	r := SetRouter(handler.NewMetricHandler(newMetricService, "name", 21))
+	newPrometheus := p.NewMetricsImpl()
+	r := SetRouter(handler.NewPrometheusHandler(newPrometheus))
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", 8080),
 		Handler: r,

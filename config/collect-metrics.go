@@ -11,50 +11,47 @@ import (
 )
 
 var (
-	watchInterval = 3 * time.Second
-	configOnce    sync.Once
+	configOnce sync.Once
 )
 
-type Config struct {
-	Environment EnvironmentConfig `mapstructure:"environment"`
-	Internal    InternalConfig    `mapstructure:"internal"`
+type CollectMetricsConfiguration struct {
+	// IsContainer *bool   `json:"is_container" yaml:"is_container" mapstructure:"server" binding:"omitempty"`
+	Server  Server  `json:"server"`
+	Metrics Metrics `json:"metrics"`
 }
 
-type EnvironmentConfig struct {
-	MySQL MySQLConfig `mapstructure:"internal_mysql"`
+type Server struct {
+	Listen string `json:"listen" yaml:"listen" binding:"required"`
+	Port   int    `json:"port" yaml:"port" binding:"required"`
+	// time.Duration 的零值是 0s, *time.Duration 的零值是 nil
+	GlobalPeriodSeconds *time.Duration `json:"periodSeconds" yaml:"periodSeconds" mapstructure:"periodSeconds" binding:"omitempty"`
 }
-type MySQLConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	Database string `mapstructure:"database"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
+type Metrics struct {
+	TCP     *Netstat `json:"netstat" yaml:"netstat" binding:"omitempty"`
+	PS      *Process `json:"process" yaml:"process" binding:"omitempty"`
+	Session *Tty     `json:"tty" yaml:"tty" binding:"omitempty"`
 }
-
-type InternalConfig struct {
-	Server struct {
-		Listen         string        `mapstructure:"listen"`
-		Port           int           `mapstructure:"port"`
-		ScrapeInterval time.Duration `mapstructure:"scrapeInterval"`
-	} `mapstructure:"server"`
-	Supervisor struct {
-		State    string `mapstructure:"state"`
-		LogsPath string `mapstructure:"logs"`
-		Listen   string `mapstructure:"listen"`
-		Port     int    `mapstructure:"port"`
-		Version  string `mapstructure:"version"`
-	} `mapstructure:"supervisor"`
-	Metrics struct {
-		Node struct {
-			Cpu  map[string]interface{} `mapstructure:"cpu"`
-			Mem  map[string]interface{} `mapstructure:"mem"`
-			Disk map[string]interface{} `mapstructure:"disk"`
-		} `mapstructure:"node"`
-		Server map[string]map[string]interface{} `mapstructure:"server"`
-	} `mapstructure:"metrics"`
+type Netstat struct {
+	PeriodSeconds *time.Duration `json:"periodSeconds" yaml:"periodSeconds" mapstructure:"periodSeconds" binding:"omitempty"`
+	VerifyType    []string       `json:"verify_type" yaml:"verify_type" binding:"required, dive, min=1"`
+	MetricName    string         `json:"metric_name" yaml:"metric_name" binding:"required"`
+	MetricLabels  []string       `json:"metric_labels" yaml:"metric_labels" binding:"required, dive, min=1"`
 }
 
-func (C *Config) parse(path string) error {
+type Process struct {
+	PeriodSeconds *time.Duration `json:"periodSeconds" yaml:"periodSeconds" mapstructure:"periodSeconds" binding:"omitempty"`
+	VerifyType    []string       `json:"verify_type" yaml:"verify_type" binding:"required, dive, min=1"`
+	MetricName    string         `json:"metric_name" yaml:"metric_name" binding:"required"`
+	MetricLabels  []string       `json:"metric_labels" yaml:"metric_labels" binding:"required, dive, min=1"`
+}
+type Tty struct {
+	PeriodSeconds *time.Duration `json:"periodSeconds" yaml:"periodSeconds" mapstructure:"periodSeconds" binding:"omitempty"`
+	VerifyType    []string       `json:"verify_type" yaml:"verify_type" binding:"required, dive, min=1"`
+	MetricName    string         `json:"metric_name" yaml:"metric_name" binding:"required"`
+	MetricLabels  []string       `json:"metric_labels" yaml:"metric_labels" binding:"required, dive, min=1"`
+}
+
+func (C *CollectMetricsConfiguration) parse(path string) error {
 	if len(path) == 0 {
 		path = common.COLLECT_METRICS_CONFIG_PATH
 	}
@@ -76,9 +73,11 @@ func (C *Config) parse(path string) error {
 	return nil
 }
 
-func LoadInternalConfig(filePath string) (*Config, error) {
-	var config *Config = &Config{}
+func LoadInternalConfig(filePath string) (*CollectMetricsConfiguration, error) {
+	var config *CollectMetricsConfiguration = &CollectMetricsConfiguration{}
 	var err error
-	err = config.parse(filePath)
+	configOnce.Do(func() {
+		err = config.parse(filePath)
+	})
 	return config, err
 }

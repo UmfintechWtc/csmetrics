@@ -13,7 +13,7 @@ import (
 // @Accept json
 // @Produce json
 // @Router /test [get]
-func Tcp(c *gin.Context) {
+func TcpGuage(c *gin.Context) {
 	fmt.Println("TianCiwang")
 	c.JSON(200, gin.H{
 		"message": "ok",

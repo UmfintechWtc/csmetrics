@@ -2,27 +2,36 @@
 server:
   listen: 0.0.0.0
   port: 9099
-  global_scrape_interval: 120s
+  periodSeconds: 60s
 
 metrics:
   netstat:
+    periodSeconds: 36s
     # 获取tcp连接TIME_WAIT数量
-    time_wait:
-      scrape_interval: 36s
-    # 获取tcp连接ESTABLISHED数量
-    established:
-      scrape_interval: 36s
+    verify_type:
+      - time_wait
+      - established
+    metric_name:
+      - netstat
+    metric_labels:
+      - "type"
   process:
+    periodSeconds: 60s
     # 获取总进程数
-    total_processes:
-      scrape_interval: 36s
-    # 获取启动用户为starcross的总进程数
-    special_user_processes:
-      user: starcross
-      scrape_interval: 36s
+    verify_user:
+      - "root"
+      - "starcross"
+    metric_name:
+      - "processes"
+    metric_labels:
+      - "user"
   session:
+    periodSeconds: 60
     # 获取ssh session会话数量
-    tty:
-      scrape_interval: 36s
-      labels:
-        - "user"
+    verify_user:
+      - "root"
+      - "wtc"
+    metric_name:
+      - "tty"
+    metric_labels:
+      - "user"
