@@ -9,29 +9,24 @@ metrics:
     periodSeconds: 36s
     # 获取tcp连接TIME_WAIT数量
     verify_type:
-      - time_wait
-      - established
-    metric_name:
-      - netstat
-    metric_labels:
-      - "type"
+      - "time_wait"
+      - "established"
+    metric_name: netstat
+    metric_help: "get netstat order by state"
   process:
     periodSeconds: 60s
-    # 获取总进程数
-    verify_user:
+    # 获取各用户进程
+    verify_type:
       - "root"
       - "starcross"
-    metric_name:
-      - "processes"
-    metric_labels:
-      - "user"
+    metric_name: "processes"
+    metric_help: "get process order by user"
+
   session:
-    periodSeconds: 60
-    # 获取ssh session会话数量
-    verify_user:
+    periodSeconds: 60s
+    # 获取各用户session会话数量
+    verify_type:
       - "root"
       - "wtc"
-    metric_name:
-      - "tty"
-    metric_labels:
-      - "user"
+    metric_name: "tty"
+    metric_help: "get session order by user"
