@@ -2,29 +2,17 @@ package handler
 
 import (
 	p "collect-metrics/client/prometheus"
-	"collect-metrics/service"
+	"collect-metrics/collector"
 )
 
-type MetricHandler struct {
-	service service.MetricService
-	name    string
-	age     int
-}
-
-func NewMetricHandler(service service.MetricService, name string, age int) *MetricHandler {
-	return &MetricHandler{
-		service: service,
-		name:    name,
-		age:     age,
-	}
-}
-
 type PrometheusHandler struct {
-	service p.PrometheusMetricsType
+	PromService p.PrometheusMetricsType
+	Collect     collector.CollectorValues
 }
 
-func NewPrometheusHandler(service p.PrometheusMetricsType) *PrometheusHandler {
+func NewPrometheusHandler(prometheus p.PrometheusMetricsType, collector collector.CollectorValues) *PrometheusHandler {
 	return &PrometheusHandler{
-		service: service,
+		PromService: prometheus,
+		Collect:     collector,
 	}
 }

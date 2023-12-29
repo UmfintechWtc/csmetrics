@@ -1,42 +1,54 @@
 package prometheus
 
 import (
+	"collect-metrics/client/cli"
+
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type MetricsImpl struct{}
+type MetricsImpl struct {
+	Cli cli.ShellCli
+}
 
-func (m *MetricsImpl) CreateGauge(opts prometheus.GaugeOpts, labelNames []string) *prometheus.GaugeVec {
+func (m *MetricsImpl) CreateGauge(metricName, metricHelp string, labelNames []string) *prometheus.GaugeVec {
 	GaugeMetric := prometheus.NewGaugeVec(
-		opts,
+		prometheus.GaugeOpts{
+			Name: metricName,
+			Help: metricHelp,
+		},
 		labelNames,
 	)
 	return GaugeMetric
 }
 
-func (i *MetricsImpl) SetGaugeValues(vec *prometheus.GaugeVec, labels map[string]string, value float64) {
-	vec.With(labels).Set(value)
-}
-
-func (m *MetricsImpl) CreateCounter(opts prometheus.CounterOpts, labelNames []string) *prometheus.CounterVec {
+func (m *MetricsImpl) CreateCounter(metricName, metricHelp string, labelNames []string) *prometheus.CounterVec {
 	CounterMetric := prometheus.NewCounterVec(
-		opts,
+		prometheus.CounterOpts{
+			Name: metricName,
+			Help: metricHelp,
+		},
 		labelNames,
 	)
 	return CounterMetric
 }
 
-func (m *MetricsImpl) CreateHistogram(opts prometheus.HistogramOpts, labelNames []string) *prometheus.HistogramVec {
+func (m *MetricsImpl) CreateHistogram(metricName, metricHelp string, labelNames []string) *prometheus.HistogramVec {
 	HistogramMetric := prometheus.NewHistogramVec(
-		opts,
+		prometheus.HistogramOpts{
+			Name: metricName,
+			Help: metricHelp,
+		},
 		labelNames,
 	)
 	return HistogramMetric
 }
 
-func (m *MetricsImpl) CreateSummary(opts prometheus.SummaryOpts, labelNames []string) *prometheus.SummaryVec {
+func (m *MetricsImpl) CreateSummary(metricName, metricHelp string, labelNames []string) *prometheus.SummaryVec {
 	SummaryMetric := prometheus.NewSummaryVec(
-		opts,
+		prometheus.SummaryOpts{
+			Name: metricName,
+			Help: metricHelp,
+		},
 		labelNames,
 	)
 	return SummaryMetric

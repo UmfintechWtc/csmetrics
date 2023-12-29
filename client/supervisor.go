@@ -1,3 +1,4 @@
+// deprecated, only for testing supervisord
 package client
 
 import (

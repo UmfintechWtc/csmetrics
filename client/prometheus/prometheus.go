@@ -2,15 +2,14 @@ package prometheus
 
 import "github.com/prometheus/client_golang/prometheus"
 
-// 初始化prometheus 数据类型
+// Prometheus 数据类型接口
 type PrometheusMetricsType interface {
-	// 初始化Gauge类型Metrics
-	CreateGauge(opts prometheus.GaugeOpts, labels []string) *prometheus.GaugeVec
-	SetGaugeValues(vec *prometheus.GaugeVec, labels map[string]string, value float64)
-	// 初始化Counter类型Metrics
-	CreateCounter(opts prometheus.CounterOpts, labels []string) *prometheus.CounterVec
-	// 初始化Histogram类型Metrics
-	CreateHistogram(opts prometheus.HistogramOpts, labels []string) *prometheus.HistogramVec
-	// 初始化Summary类型Metrics
-	CreateSummary(opts prometheus.SummaryOpts, labels []string) *prometheus.SummaryVec
+	// CreateGauge 创建Guage Metric类型方法
+	CreateGauge(metricName, metricHelp string, labels []string) *prometheus.GaugeVec
+	// CreateCounter 创建Counter Metric类型方法
+	CreateCounter(metricName, metricHelp string, labels []string) *prometheus.CounterVec
+	// CreateHistogram 创建Histogram Metric类型方法
+	CreateHistogram(metricName, metricHelp string, labels []string) *prometheus.HistogramVec
+	// CreateSummary 创建Summary Metric类型方法
+	CreateSummary(metricName, metricHelp string, labels []string) *prometheus.SummaryVec
 }

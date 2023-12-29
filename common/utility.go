@@ -7,22 +7,12 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"strings"
 	"time"
 )
 
 func FileExists(filepath string) bool {
 	_, err := os.Stat(filepath)
 	return !os.IsNotExist(err)
-}
-
-func MatchKeyWord(str string, sliceData []string) bool {
-	for _, e := range sliceData {
-		if strings.Contains(str, e) {
-			return true
-		}
-	}
-	return false
 }
 
 func ExecCmd(cmd string) (string, error) {
@@ -44,7 +34,7 @@ func ChangeInterfaceToCustomFormat(kwargs interface{}) (string, error) {
 		} else if len(v) == 2 {
 			fmtV = `"(` + v[0] + "|" + v[1] + `)"`
 
-		} else {
+		} else if len(v) >= 3 {
 			for i, s := range v {
 				if i == 0 {
 					fmtV += `"(` + s
@@ -54,6 +44,8 @@ func ChangeInterfaceToCustomFormat(kwargs interface{}) (string, error) {
 					fmtV += "|" + s
 				}
 			}
+		} else {
+			fmtV = `""`
 		}
 		return fmtV, nil
 	case map[string]string:
@@ -81,6 +73,7 @@ func HostInfo() (string, string, error) {
 	return hostname, address[0].String(), nil
 }
 
+// for debug
 func RandomInt() float64 {
 	rand.Seed(time.Now().UnixNano())
 

@@ -29,7 +29,7 @@ type Metrics struct {
 }
 type Netstat struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
-	VerifyType    []string       `mapstructure:"verify_type" binding:"min=1"`
+	VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
 	MetricName    string         `mapstructure:"metric_name" binding:"required"`
 	MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
 	// MetricLabels  []string       `mapstructure:"metric_labels" binding:"min=1"`
@@ -37,14 +37,14 @@ type Netstat struct {
 
 type Process struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
-	VerifyType    []string       `mapstructure:"verify_type" binding:"min=1"`
+	VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
 	MetricName    string         `mapstructure:"metric_name" binding:"required"`
 	MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
 	// MetricLabels  []string       `mapstructure:"metric_labels" binding:"min=1"`
 }
 type Tty struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
-	VerifyType    []string       `mapstructure:"verify_type" binding:"min=1"`
+	VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
 	MetricName    string         `mapstructure:"metric_name" binding:"required"`
 	MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
 	// MetricLabels  []string       `json:"metric_labels" json:"metric_labels" binding:"min=1"`

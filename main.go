@@ -1,8 +1,7 @@
 package main
 
 import (
-	"collect-metrics/common"
-	"collect-metrics/config"
+	"collect-metrics/collector"
 	_ "collect-metrics/docs"
 	"collect-metrics/handler"
 	"fmt"
@@ -37,12 +36,18 @@ func SetRouter(prom *handler.PrometheusHandler) *gin.Engine {
 }
 
 func main() {
-	newPrometheus := p.NewMetricsImpl()
-	newCli := cli.NewCliImpl()
-	config, _ := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
-	a, b := newCli.Netstat(config.Metrics.TCP.VerifyType)
-	fmt.Println(a, b)
-	r := SetRouter(handler.NewPrometheusHandler(newPrometheus))
+	// 创建 PrometheusMetricsType 对象
+	prometheusMetricsType := p.NewMetricsImpl()
+	// 创建 ShellCli 对象
+	shelCli := cli.NewCliImpl()
+	// 创建 CollectorValues 对象
+	collectorValues := collector.NewCollectorValuesImpl(shelCli)
+	r := SetRouter(
+		handler.NewPrometheusHandler(
+			prometheusMetricsType,
+			collectorValues,
+		),
+	)
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", 8080),
 		Handler: r,

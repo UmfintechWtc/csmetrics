@@ -2,29 +2,24 @@ package cli
 
 import (
 	"collect-metrics/common"
-	"fmt"
 )
 
 type CliImpl struct{}
 
-func (c *CliImpl) Netstat(kwargs []string) (map[string]string, error) {
+func (c *CliImpl) GaugeValues(kwargs []string, cmdTemplate string) (*GaugeValues, error) {
 	cliK, err := common.ChangeInterfaceToCustomFormat(kwargs)
 	if err != nil {
 		return nil, err
 	}
-	cmd := fmt.Sprintf(`netstat -an | grep tcp | egrep -i %v | awk '{print $NF}' |sort | uniq -c`, cliK)
-	fmt.Println(cmd)
-	return nil, nil
+	n, err := executeCommandWithFloat64(cliK, cmdTemplate)
+	if err != nil {
+		return nil, err
+	}
+	gauge.CmdRes = n
+	return gauge, nil
+
 }
 
-func (c *CliImpl) Process(kwargs []string) (map[string]string, error) {
-	return nil, nil
-}
-
-func (c *CliImpl) Tty(kwargs []string) (map[string]string, error) {
-	return nil, nil
-}
-
-func NewCliImpl() Cli {
+func NewCliImpl() ShellCli {
 	return &CliImpl{}
 }
