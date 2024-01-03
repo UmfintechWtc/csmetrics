@@ -11,8 +11,8 @@ import (
 )
 
 type CollectMetricsConfiguration struct {
-	Server  Server  `yaml:"server" json:"server" binding:"required"`
-	Metrics Metrics `yaml:"metrics" yaml:"metrics" binding:"required"`
+	Server  Server          `yaml:"server" json:"server" binding:"required"`
+	Metrics CateGoryMetrics `yaml:"metrics" yaml:"metrics" binding:"required"`
 }
 
 type Server struct {
@@ -21,12 +21,20 @@ type Server struct {
 	// time.Duration 的零值是 0s, *time.Duration 的零值是 nil
 	GlobalPeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
 }
-type Metrics struct {
+
+type CateGoryMetrics struct {
+	Gauge   Gauge   `mapstructure:"gauge" binding:"required"`
+	Counter Counter `mapstructure:"counter" binding:"required"`
+}
+type Gauge struct {
 	// 包含time.Duration类型，避免转换失败不使用json、yaml
 	TCP     Netstat `mapstructure:"netstat" binding:"required"`
 	PS      Process `mapstructure:"process" binding:"required"`
 	Session Tty     `mapstructure:"session" binding:"required"`
 }
+
+type Counter struct{}
+
 type Netstat struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
 	VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`

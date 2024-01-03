@@ -5,29 +5,30 @@ server:
   periodSeconds: 60s
 
 metrics:
-  netstat:
-    periodSeconds: 36s
-    # 获取tcp指定连接状态，区分大小写，若不配置默认所有状态
-    verify_type:
-      - "TIME_WAIT"
-      - "ESTABLISHED"
-    metric_name: netstat
-    metric_help: "get netstat order by state"
-  process:
-    periodSeconds: 60s
-    # 获取指定用户管理进程，区分大小写，若不配置获取所有用户管理进程
-    verify_type:
-      - "zabbix"
-      - "starcross"
-      - "root"
-    metric_name: "processes"
-    metric_help: "get process order by user"
-
-  session:
-    periodSeconds: 60s
-    # 获取指定用户session会话数量，区分大小写，若不配置获取所有用户登录会话
-    verify_type:
-      # - "root"
-      # - "wtc"
-    metric_name: "tty"
-    metric_help: "get session order by user"
+  # gauage类型指标
+  gauge:
+    netstat:
+      periodSeconds: 60s
+      # 获取tcp指定连接状态，区分大小写，若不配置默认所有状态
+      verify_type:
+        - "TIME_WAIT"
+        - "ESTABLISHED"
+      metric_name: netstat
+      metric_help: "get netstat order by state"
+    process:
+      periodSeconds: 60s
+      # 获取指定用户管理进程，区分大小写，若不配置获取所有用户管理进程
+      verify_type:
+        - "zabbix"
+        - "starcross"
+        - "root"
+      metric_name: "processes"
+      metric_help: "get process order by user"
+    session:
+      periodSeconds: 60s
+      # 获取指定用户session会话数量，区分大小写，若不配置获取所有用户登录会话
+      verify_type:
+        # - "root"
+        # - "wtc"
+      metric_name: "tty"
+      metric_help: "get session order by user"

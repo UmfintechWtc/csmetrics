@@ -11,8 +11,9 @@ const (
 )
 
 var (
-	BASE_LABELS            = []string{"hostname", "ip"}
-	PROCESS_METRICS_LABELS = append(BASE_LABELS, "user")
-	NETSTAT_METRICS_LABELS = append(BASE_LABELS, "state")
-	SESSION_METRICS_LABELS = append(BASE_LABELS, "user")
+	BASE_LABELS                      = []string{"hostname", "ip"}
+	GAUGE_PROCESS_METRICS_LABELS     = append(BASE_LABELS, "user")
+	GAUGE_NETSTAT_METRICS_LABELS     = append(BASE_LABELS, "state")
+	GAUGE_SESSION_METRICS_LABELS     = append(BASE_LABELS, "user")
+	COUNTER_INTERFACE_METRICS_LABELS = append(BASE_LABELS, "code", "path")
 )

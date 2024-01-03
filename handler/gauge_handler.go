@@ -3,6 +3,7 @@ package handler
 import (
 	"collect-metrics/common"
 	config "collect-metrics/module"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -12,6 +13,7 @@ import (
 
 var (
 	metricOnce      sync.Once
+	register        *prometheus.Registry
 	getProcessCount *prometheus.GaugeVec
 	getSessionCount *prometheus.GaugeVec
 	getTCPCount     *prometheus.GaugeVec
@@ -23,6 +25,7 @@ const (
 	sessionCmd = "who | egrep -i %s | grep -v grep | awk '{print $1}' | grep -v grep | sort | uniq -c"
 )
 
+// 上报Gauge Metric数据
 func (p *PrometheusHandler) Gauge(c *gin.Context) {
 	// 初始化配置
 	config, err := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
@@ -38,16 +41,18 @@ func (p *PrometheusHandler) Gauge(c *gin.Context) {
 	}
 	// 在第一次运行的时候初始化Label及注册Metric
 	metricOnce.Do(func() {
-		getProcessCount = p.PromService.CreateGauge(config.Metrics.PS.MetricName, config.Metrics.PS.MetricHelp, common.PROCESS_METRICS_LABELS)
-		prometheus.MustRegister(getProcessCount)
-		getSessionCount = p.PromService.CreateGauge(config.Metrics.Session.MetricName, config.Metrics.Session.MetricHelp, common.SESSION_METRICS_LABELS)
-		prometheus.MustRegister(getSessionCount)
-		getTCPCount = p.PromService.CreateGauge(config.Metrics.TCP.MetricName, config.Metrics.TCP.MetricHelp, common.NETSTAT_METRICS_LABELS)
-		prometheus.MustRegister(getTCPCount)
+		fmt.Println("Initializing metrics...")
+		getProcessCount = p.PromService.CreateGauge(config.Metrics.Gauge.PS.MetricName, config.Metrics.Gauge.PS.MetricHelp, common.GAUGE_PROCESS_METRICS_LABELS)
+		// prometheus.MustRegister(getProcessCount)
+		p.PromService.Register().MustRegister(getProcessCount)
+		getSessionCount = p.PromService.CreateGauge(config.Metrics.Gauge.Session.MetricName, config.Metrics.Gauge.Session.MetricHelp, common.GAUGE_SESSION_METRICS_LABELS)
+		p.PromService.Register().MustRegister(getSessionCount)
+		getTCPCount = p.PromService.CreateGauge(config.Metrics.Gauge.TCP.MetricName, config.Metrics.Gauge.TCP.MetricHelp, common.GAUGE_NETSTAT_METRICS_LABELS)
+		p.PromService.Register().MustRegister(getTCPCount)
 	})
 
-	// 注册Process Label的Value及Metric的值
-	err = p.Collect.GaugeCollector(getProcessCount, processCmd, config.Metrics.PS.VerifyType, common.PROCESS_METRICS_LABELS)
+	// 上报Process Label的Value及Metric的值
+	err = p.Collect.GaugeCollector(getProcessCount, processCmd, config.Metrics.Gauge.PS.VerifyType, common.GAUGE_PROCESS_METRICS_LABELS)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
@@ -57,8 +62,8 @@ func (p *PrometheusHandler) Gauge(c *gin.Context) {
 			),
 		)
 	}
-	// 注册Session Label的Value及Metric的值
-	err = p.Collect.GaugeCollector(getSessionCount, sessionCmd, config.Metrics.Session.VerifyType, common.SESSION_METRICS_LABELS)
+	// 上报Session Label的Value及Metric的值
+	err = p.Collect.GaugeCollector(getSessionCount, sessionCmd, config.Metrics.Gauge.Session.VerifyType, common.GAUGE_SESSION_METRICS_LABELS)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
@@ -69,8 +74,8 @@ func (p *PrometheusHandler) Gauge(c *gin.Context) {
 		)
 	}
 
-	// 注册TCP Label的Value及Metric的值
-	err = p.Collect.GaugeCollector(getTCPCount, netstatCmd, config.Metrics.TCP.VerifyType, common.NETSTAT_METRICS_LABELS)
+	// 上报TCP Label的Value及Metric的值
+	err = p.Collect.GaugeCollector(getTCPCount, netstatCmd, config.Metrics.Gauge.TCP.VerifyType, common.GAUGE_NETSTAT_METRICS_LABELS)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,

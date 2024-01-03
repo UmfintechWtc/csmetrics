@@ -6,6 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// 实现 GaugeCollector 接口方法
 func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdTemplate string, cmdArgs, labelNames []string) error {
 	hostname, ip, err := common.HostInfo()
 	if err != nil {
