@@ -12,22 +12,35 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func SetRouter(prom *handler.PrometheusHandler) *gin.Engine {
-	gin.SetMode(gin.DebugMode)
+var (
+	promOpts promhttp.HandlerOpts
+	registry = prometheus.NewRegistry()
+)
+
+func SetRouter(
+	prom *handler.PrometheusHandler,
+	mode string,
+) *gin.Engine {
+	if mode == "" {
+		gin.SetMode(gin.ReleaseMode)
+	} else if common.CheckKey(mode, common.RUN_MODE) {
+		gin.SetMode(mode)
+	} else {
+		log.Panic(
+			fmt.Sprintf(
+				"got unknown gin.engine mode %v, expect %v",
+				mode,
+				common.RUN_MODE,
+			),
+		)
+	}
+
 	r := gin.New()
-	r.Use(gin.WrapH(promhttp.HandlerFor(prom.PromService.Register(), promhttp.HandlerOpts{})))
-	// r.Use(gin.WrapH(promhttp.Handler()))
-	// r.Use(gin.WrapH(promhttp.Handler())) // promhttp.HandlerFor(
-	// TODO: not working with NewGoCollector
-	// prometheus.DefaultGatherer,
-	// promhttp.HandlerOpts{
-	// 	EnableOpenMetrics: false,
-	// },
-	// )
-	r.GET("/gmetrics", prom.Gauge)
+	r.GET("/gmetrics", gin.WrapH(promhttp.HandlerFor(prom.Gauge(mode, &gin.Context{}), promhttp.HandlerOpts{})))
 	r.Any("/gmetrics/*path", prom.Counter)
 	r.GET("/cmetrics", prom.Counter)
 	r.Any("/cmetrics/*path", prom.Counter)
@@ -48,18 +61,23 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+	// 创建 ShellCli 对象
+	shellCli := cli.NewCliImpl()
 	// 创建 PrometheusMetricsType 对象
 	prometheusMetricsType := p.NewMetricsImpl()
-	// 创建 ShellCli 对象
-	shelCli := cli.NewCliImpl()
 	// 创建 CollectorValues 对象
-	collectorValues := collector.NewCollectorValuesImpl(shelCli)
-	r := SetRouter(
-		handler.NewPrometheusHandler(
-			prometheusMetricsType,
-			collectorValues,
-		),
+	collectorValues := collector.NewCollectorValuesImpl(shellCli)
+	// 创建 PrometheusHandler 对象
+	newPrometheusHandler := handler.NewPrometheusHandler(
+		prometheusMetricsType,
+		collectorValues,
 	)
+	// 绑定路由
+	r := SetRouter(
+		newPrometheusHandler,
+		config.Server.Mode,
+	)
+	// 启动http服务
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.Server.Port),
 		Handler: r,

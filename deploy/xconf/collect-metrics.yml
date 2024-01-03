@@ -3,6 +3,8 @@ server:
   listen: 0.0.0.0
   port: 9099
   periodSeconds: 60s
+  # debug | release | test, default: debug
+  mode: debug
 
 metrics:
   # gauage类型指标

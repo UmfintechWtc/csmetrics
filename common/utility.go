@@ -15,6 +15,15 @@ func FileExists(filepath string) bool {
 	return !os.IsNotExist(err)
 }
 
+func CheckKey(key string, sl []string) bool {
+	rangeMap := make(map[string]struct{}, len(sl))
+	for _, tag := range sl {
+		rangeMap[tag] = struct{}{}
+	}
+	_, ok := rangeMap[key]
+	return ok
+}
+
 func ExecCmd(cmd string) (string, error) {
 	output, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {

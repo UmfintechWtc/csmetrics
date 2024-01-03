@@ -8,6 +8,9 @@ const (
 	COLLECT_TCP_METRICS_ERROR     = 10004
 	FAILED_CODE                   = "Failed"
 	SUCCEED_CODE                  = "Succeed"
+	RUN_WITH_DEBUG                = "debug"
+	RUN_WITH_RELEASE              = "release"
+	RUN_WITH_TEST                 = "test"
 )
 
 var (
@@ -16,4 +19,5 @@ var (
 	GAUGE_NETSTAT_METRICS_LABELS     = append(BASE_LABELS, "state")
 	GAUGE_SESSION_METRICS_LABELS     = append(BASE_LABELS, "user")
 	COUNTER_INTERFACE_METRICS_LABELS = append(BASE_LABELS, "code", "path")
+	RUN_MODE                         = []string{"debug", "release", "test"}
 )

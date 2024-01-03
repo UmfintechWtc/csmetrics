@@ -18,6 +18,7 @@ type CollectMetricsConfiguration struct {
 type Server struct {
 	Listen string `yaml:"listen" json:"listen"`
 	Port   int    `yaml:"port" json:"port" binding:"required"`
+	Mode   string `mapstructure:"mode" binding:"omitempty"`
 	// time.Duration 的零值是 0s, *time.Duration 的零值是 nil
 	GlobalPeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
 }
