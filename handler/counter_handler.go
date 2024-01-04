@@ -15,7 +15,7 @@ var (
 	counterMetricOnce sync.Once
 	counterRegistry   *prometheus.Registry
 	getRequestsCount  *prometheus.CounterVec
-	code              string
+	counterCode       string
 )
 
 func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
@@ -60,22 +60,22 @@ func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
 	if mode == common.RUN_WITH_DEBUG {
 		num1 := common.RandomInt()
 		if num1 <= 20 {
-			code = "100"
+			counterCode = "100"
 		} else if 20 < num1 && num1 <= 40 {
-			code = "200"
+			counterCode = "200"
 		} else if 40 < num1 && num1 <= 60 {
-			code = "300"
+			counterCode = "300"
 		} else if 60 < num1 && num1 <= 80 {
-			code = "400"
+			counterCode = "400"
 		} else if 80 < num1 && num1 <= 100 {
-			code = "500"
+			counterCode = "500"
 		}
 	} else {
-		code = strconv.Itoa(c.Writer.Status())
+		counterCode = strconv.Itoa(c.Writer.Status())
 	}
 	setLabelsValue := map[string]string{
 		common.COUNTER_REQUESTS_METRICS_LABELS[0]: c.Request.URL.Path,
-		common.COUNTER_REQUESTS_METRICS_LABELS[1]: code,
+		common.COUNTER_REQUESTS_METRICS_LABELS[1]: counterCode,
 	}
 	p.Collect.CounterCollector(getRequestsCount, setLabelsValue)
 }

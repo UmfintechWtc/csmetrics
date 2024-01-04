@@ -24,8 +24,9 @@ type Server struct {
 }
 
 type CateGoryMetrics struct {
-	Gauge   Gauge   `mapstructure:"gauge" binding:"required"`
-	Counter Counter `mapstructure:"counter" binding:"required"`
+	Gauge     Gauge     `mapstructure:"gauge" binding:"required"`
+	Counter   Counter   `mapstructure:"counter" binding:"required"`
+	Histogram Histogram `mapstructure:"histogram" binding:"required"`
 }
 type Gauge struct {
 	// 包含time.Duration类型，避免转换失败不使用json、yaml
@@ -36,6 +37,10 @@ type Gauge struct {
 
 type Counter struct {
 	Request Requests `mapstructure:"requests" binding:"required"`
+}
+
+type Histogram struct {
+	Delay Delay `mapstructure:"delay" binding:"required"`
 }
 
 type Netstat struct {
@@ -64,6 +69,21 @@ type Tty struct {
 type Requests struct {
 	MetricName string `mapstructure:"metric_name" binding:"required"`
 	MetricHelp string `mapstructure:"metric_help" binding:"omitempty"`
+}
+type Delay struct {
+	MetricName string     `mapstructure:"metric_name" binding:"required"`
+	MetricHelp string     `mapstructure:"metric_help" binding:"omitempty"`
+	Buckets    DelayRange `mapstructure:"buckets" binding:"omitempty"`
+}
+type DelayRange struct {
+	Linear struct {
+		Enabled bool           `mapstructure:"enabled"`
+		Range   map[string]int `mapstructure:"range"`
+	} `mapstructure:"linear"`
+	Slice struct {
+		Enabled bool      `mapstructure:"enabled"`
+		Range   []float64 `mapstructure:"range"`
+	} `mapstructure:"slice"`
 }
 
 func (C *CollectMetricsConfiguration) parse(path string) error {

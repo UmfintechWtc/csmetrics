@@ -15,7 +15,7 @@ metrics:
       verify_type:
         - "TIME_WAIT"
         - "ESTABLISHED"
-      metric_name: netstat
+      metric_name: "netstat_total"
       metric_help: "get netstat order by state"
     process:
       periodSeconds: 60s
@@ -24,7 +24,7 @@ metrics:
         - "zabbix"
         - "starcross"
         - "root"
-      metric_name: "processes"
+      metric_name: "process_total"
       metric_help: "get process order by user"
     session:
       periodSeconds: 60s
@@ -32,10 +32,32 @@ metrics:
       verify_type:
         # - "root"
         # - "wtc"
-      metric_name: "tty"
+      metric_name: "tty_total"
       metric_help: "get session order by user"
   counter:
     requests:
-      metric_name: "requests"
+      metric_name: "requests_total"
       metric_help: "Total number of HTTP requests"
+  histogram:
+    delay:
+      metric_name: "delay_total"
+      metric_help: "Total number of HTTP requests delay"
+      buckets:
+        # 支持切片和线性，若都开启线性优先级高
+        linear:
+          enabled: True
+          range:
+            # [10 20 30 40 50]
+            start: 10
+            width: 10
+            count: 5
+        slice:
+          enabled: true
+          range:
+            # [10 20 30 40 50]
+            - 10
+            - 20
+            - 30
+            - 40
+            - 50
     
