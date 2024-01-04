@@ -24,7 +24,7 @@ const (
 )
 
 // 上报Gauge Metric数据
-func (p *PrometheusHandler) Gauge(mode string, c *gin.Context) *prometheus.Registry {
+func (p *PrometheusHandler) Gauge(mode string, c *gin.Context) {
 	// 初始化配置
 	config, err := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
 	if err != nil {
@@ -32,13 +32,26 @@ func (p *PrometheusHandler) Gauge(mode string, c *gin.Context) *prometheus.Regis
 			http.StatusBadRequest,
 			common.NewErrorResponse(
 				common.PARSE_CONFIG_ERROR,
+				255,
 				err,
 			),
 		)
-		return nil
+		return
 	}
-	// 在第一次运行的时候初始化Label及注册Metric
+	// 仅在第一次运行的时候初始化Label及注册Metric
 	metricOnce.Do(func() {
+		if mode != common.RUN_WITH_RELEASE {
+			// 当为debug 或 test 模式时，开启内置Go 运行时相关指标
+			p.GaugeRegistry.MustRegister(
+				prometheus.NewGoCollector(),
+			)
+			// 当为debug 或 test 模式时，开启内置当前进程相关指标
+			p.GaugeRegistry.MustRegister(
+				prometheus.NewProcessCollector(
+					prometheus.ProcessCollectorOpts{},
+				),
+			)
+		}
 		getProcessCount = p.PromService.CreateGauge(config.Metrics.Gauge.PS.MetricName, config.Metrics.Gauge.PS.MetricHelp, common.GAUGE_PROCESS_METRICS_LABELS)
 		p.GaugeRegistry.MustRegister(getProcessCount)
 		getSessionCount = p.PromService.CreateGauge(config.Metrics.Gauge.Session.MetricName, config.Metrics.Gauge.Session.MetricHelp, common.GAUGE_SESSION_METRICS_LABELS)
@@ -47,44 +60,31 @@ func (p *PrometheusHandler) Gauge(mode string, c *gin.Context) *prometheus.Regis
 		p.GaugeRegistry.MustRegister(getTCPCount)
 	})
 	// 上报Process Label的Value及Metric的值
-	err = p.Collect.GaugeCollector(getProcessCount, processCmd, config.Metrics.Gauge.PS.VerifyType, common.GAUGE_PROCESS_METRICS_LABELS)
-	if err != nil {
+	rsp := p.Collect.GaugeCollector(getProcessCount, processCmd, config.Metrics.Gauge.PS.VerifyType, common.GAUGE_PROCESS_METRICS_LABELS)
+	if rsp != nil {
 		c.JSON(
 			http.StatusInternalServerError,
-			common.NewErrorResponse(
-				common.COLLECT_PROCESS_METRICS_ERROR,
-				err,
-			),
+			rsp,
 		)
-		return nil
+		return
 	}
 	// 上报Session Label的Value及Metric的值
-	err = p.Collect.GaugeCollector(getSessionCount, sessionCmd, config.Metrics.Gauge.Session.VerifyType, common.GAUGE_SESSION_METRICS_LABELS)
-	if err != nil {
+	rsp = p.Collect.GaugeCollector(getSessionCount, sessionCmd, config.Metrics.Gauge.Session.VerifyType, common.GAUGE_SESSION_METRICS_LABELS)
+	if rsp != nil {
 		c.JSON(
 			http.StatusInternalServerError,
-			common.NewErrorResponse(
-				common.COLLECT_SESSION_METRICS_ERROR,
-				err,
-			),
+			rsp,
 		)
-		return nil
+		return
 	}
 
 	// 上报TCP Label的Value及Metric的值
-	err = p.Collect.GaugeCollector(getTCPCount, netstatCmd, config.Metrics.Gauge.TCP.VerifyType, common.GAUGE_NETSTAT_METRICS_LABELS)
-	if err != nil {
+	rsp = p.Collect.GaugeCollector(getTCPCount, netstatCmd, config.Metrics.Gauge.TCP.VerifyType, common.GAUGE_NETSTAT_METRICS_LABELS)
+	if rsp != nil {
 		c.JSON(
 			http.StatusInternalServerError,
-			common.NewErrorResponse(
-				common.COLLECT_TCP_METRICS_ERROR,
-				err,
-			),
+			rsp,
 		)
-		return nil
+		return
 	}
-	if mode == common.RUN_WITH_DEBUG {
-		p.GaugeRegistry.MustRegister(prometheus.NewGoCollector())
-	}
-	return p.GaugeRegistry
 }

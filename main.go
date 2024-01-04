@@ -33,23 +33,17 @@ func SetRouter(
 		)
 	}
 	r := gin.New()
-	// 绑定 Gauge Metric 路由
-	r.GET("/gmetrics", gin.WrapH(
-		promhttp.HandlerFor(
-			prom.Gauge(
-				mode,
-				&gin.Context{},
-			),
-			prom.PromOpts,
-		),
-	))
-	r.Any("/gmetrics/*path", prom.Counter)
-	// 绑定 Counter Metric 路由
+	// 绑定 /gmetrics 路由，调用Gauge方法
+	r.GET("/gmetrics", func(c *gin.Context) {
+		prom.Gauge(mode, c)
+		handler := promhttp.HandlerFor(prom.GaugeRegistry, prom.PromOpts)
+		handler.ServeHTTP(c.Writer, c.Request)
+	})
+	r.GET("/gmetrics/*path", prom.Counter)
+	// 绑定 /cmetrics 路由，调用Counter方法
 	r.GET("/cmetrics", prom.Counter)
-	r.Any("/cmetrics/*path", prom.Counter)
+	r.GET("/cmetrics/*path", prom.Counter)
 	r.NoRoute(func(c *gin.Context) {
-		c.Writer.WriteHeaderNow()
-		fmt.Println(c.Writer.Status())
 		c.JSON(http.StatusNotFound, gin.H{
 			"code":    http.StatusNotFound,
 			"message": fmt.Sprintf("No such route: %v", c.Request.URL.Path),

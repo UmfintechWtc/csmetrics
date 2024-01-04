@@ -6,14 +6,18 @@ import (
 
 type CliImpl struct{}
 
-func (c *CliImpl) GaugeValues(kwargs []string, cmdTemplate string) (*GaugeValues, error) {
+func (c *CliImpl) GaugeValues(kwargs []string, cmdTemplate string) (*GaugeValues, *common.Response) {
 	cliK, err := common.ChangeInterfaceToCustomFormat(kwargs)
 	if err != nil {
-		return nil, err
+		return nil, common.NewErrorResponse(
+			common.FORMAT_CLI_QUERY_ERROR,
+			255,
+			err,
+		)
 	}
-	n, err := executeCommandWithFloat64(cliK, cmdTemplate)
-	if err != nil {
-		return nil, err
+	n, rsp := executeCommandWithFloat64(cliK, cmdTemplate)
+	if rsp != nil {
+		return nil, rsp
 	}
 	gauge.CmdRes = n
 	return gauge, nil

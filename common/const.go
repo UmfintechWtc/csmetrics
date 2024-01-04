@@ -6,6 +6,9 @@ const (
 	COLLECT_PROCESS_METRICS_ERROR = 10002
 	COLLECT_SESSION_METRICS_ERROR = 10003
 	COLLECT_TCP_METRICS_ERROR     = 10004
+	EXECUTE_CLI_ERROR             = 10005
+	FORMAT_CLI_QUERY_ERROR        = 10006
+	GET_HOSTINFO_ERROR            = 10007
 	FAILED_CODE                   = "Failed"
 	SUCCEED_CODE                  = "Succeed"
 	RUN_WITH_DEBUG                = "debug"

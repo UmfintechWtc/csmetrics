@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
@@ -25,11 +26,19 @@ func CheckKey(key string, sl []string) bool {
 }
 
 func ExecCmd(cmd string) (string, error) {
-	output, err := exec.Command("bash", "-c", cmd).Output()
+	var err error
+	cmdRes := exec.Command("bash", "-c", cmd)
+	// output, err := cmdRes.CombinedOutput()
+	stdout, _ := cmdRes.StdoutPipe()
+	output, _ := ioutil.ReadAll(stdout)
+	stderr, _ := cmdRes.StderrPipe()
+	fmt.Println(string(output), "stdout")
+	fmt.Println(stderr, "stderr")
+	fmt.Println(cmdRes.ProcessState.ExitCode(), "exit")
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("ExecCmd failed: [%s]", cmd))
 	}
-	return string(output), nil
+	return "er", nil
 }
 
 func ChangeInterfaceToCustomFormat(kwargs interface{}) (string, error) {

@@ -7,14 +7,18 @@ import (
 )
 
 // 实现 GaugeCollector 接口方法
-func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdTemplate string, cmdArgs, labelNames []string) error {
+func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdTemplate string, cmdArgs, labelNames []string) *common.Response {
 	hostname, ip, err := common.HostInfo()
 	if err != nil {
-		return err
+		return common.NewErrorResponse(
+			common.GET_HOSTINFO_ERROR,
+			255,
+			err,
+		)
 	}
-	cmd, err := c.Cli.GaugeValues(cmdArgs, cmdTemplate)
-	if err != nil {
-		return err
+	cmd, rsp := c.Cli.GaugeValues(cmdArgs, cmdTemplate)
+	if rsp != nil {
+		return rsp
 	}
 	setLabelsValue := map[string]string{
 		labelNames[0]: hostname,
