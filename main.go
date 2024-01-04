@@ -12,13 +12,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-)
-
-var (
-	promOpts promhttp.HandlerOpts
-	registry = prometheus.NewRegistry()
 )
 
 func SetRouter(
@@ -40,8 +34,18 @@ func SetRouter(
 	}
 
 	r := gin.New()
-	r.GET("/gmetrics", gin.WrapH(promhttp.HandlerFor(prom.Gauge(mode, &gin.Context{}), promhttp.HandlerOpts{})))
+	// 绑定 Gauge Metric 路由
+	r.GET("/gmetrics", gin.WrapH(
+		promhttp.HandlerFor(
+			prom.Gauge(
+				mode,
+				&gin.Context{},
+			),
+			prom.PromOpts,
+		),
+	))
 	r.Any("/gmetrics/*path", prom.Counter)
+	// 绑定 Counter Metric 路由
 	r.GET("/cmetrics", prom.Counter)
 	r.Any("/cmetrics/*path", prom.Counter)
 	r.NoRoute(func(c *gin.Context) {
@@ -72,7 +76,7 @@ func main() {
 		prometheusMetricsType,
 		collectorValues,
 	)
-	// 绑定路由
+	// 设置 Gin 路由
 	r := SetRouter(
 		newPrometheusHandler,
 		config.Server.Mode,

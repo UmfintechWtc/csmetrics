@@ -5,10 +5,12 @@ import (
 	"collect-metrics/collector"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type PrometheusHandler struct {
 	PromService       p.PrometheusMetricsType
+	PromOpts          promhttp.HandlerOpts
 	Collect           collector.CollectorValues
 	GaugeRegistry     *prometheus.Registry
 	CounterRegistry   *prometheus.Registry

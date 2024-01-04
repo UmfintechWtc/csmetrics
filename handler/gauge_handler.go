@@ -38,12 +38,14 @@ func (p *PrometheusHandler) Gauge(mode string, c *gin.Context) *prometheus.Regis
 		return nil
 	}
 	// 在第一次运行的时候初始化Label及注册Metric
-	getProcessCount = p.PromService.CreateGauge(config.Metrics.Gauge.PS.MetricName, config.Metrics.Gauge.PS.MetricHelp, common.GAUGE_PROCESS_METRICS_LABELS)
-	p.GaugeRegistry.MustRegister(getProcessCount)
-	getSessionCount = p.PromService.CreateGauge(config.Metrics.Gauge.Session.MetricName, config.Metrics.Gauge.Session.MetricHelp, common.GAUGE_SESSION_METRICS_LABELS)
-	p.GaugeRegistry.MustRegister(getSessionCount)
-	getTCPCount = p.PromService.CreateGauge(config.Metrics.Gauge.TCP.MetricName, config.Metrics.Gauge.TCP.MetricHelp, common.GAUGE_NETSTAT_METRICS_LABELS)
-	p.GaugeRegistry.MustRegister(getTCPCount)
+	metricOnce.Do(func() {
+		getProcessCount = p.PromService.CreateGauge(config.Metrics.Gauge.PS.MetricName, config.Metrics.Gauge.PS.MetricHelp, common.GAUGE_PROCESS_METRICS_LABELS)
+		p.GaugeRegistry.MustRegister(getProcessCount)
+		getSessionCount = p.PromService.CreateGauge(config.Metrics.Gauge.Session.MetricName, config.Metrics.Gauge.Session.MetricHelp, common.GAUGE_SESSION_METRICS_LABELS)
+		p.GaugeRegistry.MustRegister(getSessionCount)
+		getTCPCount = p.PromService.CreateGauge(config.Metrics.Gauge.TCP.MetricName, config.Metrics.Gauge.TCP.MetricHelp, common.GAUGE_NETSTAT_METRICS_LABELS)
+		p.GaugeRegistry.MustRegister(getTCPCount)
+	})
 	// 上报Process Label的Value及Metric的值
 	err = p.Collect.GaugeCollector(getProcessCount, processCmd, config.Metrics.Gauge.PS.VerifyType, common.GAUGE_PROCESS_METRICS_LABELS)
 	if err != nil {
