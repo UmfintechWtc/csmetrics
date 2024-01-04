@@ -32,8 +32,8 @@ func SetRouter(
 			),
 		)
 	}
-
 	r := gin.New()
+	r.Use(gin.WrapH(promhttp.Handler()))
 	// 绑定 Gauge Metric 路由
 	r.GET("/gmetrics", gin.WrapH(
 		promhttp.HandlerFor(
