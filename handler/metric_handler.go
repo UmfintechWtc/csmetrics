@@ -9,12 +9,17 @@ import (
 )
 
 type PrometheusHandler struct {
-	PromService       p.PrometheusMetricsType
-	PromOpts          promhttp.HandlerOpts
-	Collect           collector.CollectorValues
-	GaugeRegistry     *prometheus.Registry
-	CounterRegistry   *prometheus.Registry
-	SummaryRegistry   *prometheus.Registry
+	PromService p.PrometheusMetricsType
+	PromOpts    promhttp.HandlerOpts
+	Collect     collector.CollectorValues
+	AllRegistry *prometheus.Registry
+	// Debug 调试 Gauge
+	GaugeRegistry *prometheus.Registry
+	// Debug 调试 Counter
+	CounterRegistry *prometheus.Registry
+	// Debug 调试 Summary
+	SummaryRegistry *prometheus.Registry
+	// Debug 调试 Histogram
 	HistogramRegistry *prometheus.Registry
 }
 
@@ -23,6 +28,7 @@ func NewPrometheusHandler(p p.PrometheusMetricsType, collector collector.Collect
 	return &PrometheusHandler{
 		PromService: p,
 		Collect:     collector,
+		AllRegistry: prometheus.NewRegistry(),
 		// 初始化 Gauge Metric 注册表
 		GaugeRegistry: prometheus.NewRegistry(),
 		// 初始化 Counter Metric 注册表

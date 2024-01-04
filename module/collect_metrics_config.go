@@ -34,7 +34,9 @@ type Gauge struct {
 	Session Tty     `mapstructure:"session" binding:"required"`
 }
 
-type Counter struct{}
+type Counter struct {
+	Request Requests `mapstructure:"requests" binding:"required"`
+}
 
 type Netstat struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
@@ -57,6 +59,11 @@ type Tty struct {
 	MetricName    string         `mapstructure:"metric_name" binding:"required"`
 	MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
 	// MetricLabels  []string       `json:"metric_labels" json:"metric_labels" binding:"min=1"`
+}
+
+type Requests struct {
+	MetricName string `mapstructure:"metric_name" binding:"required"`
+	MetricHelp string `mapstructure:"metric_help" binding:"omitempty"`
 }
 
 func (C *CollectMetricsConfiguration) parse(path string) error {

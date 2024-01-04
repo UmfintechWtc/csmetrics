@@ -10,6 +10,6 @@ import (
 type CollectorValues interface {
 	// GaugeCollector 调用Cli接口，设置Label 及 Metric的Value，并将Metric的值上报Prometheus
 	GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdTemplate string, cmdArgs, labelNames []string) *common.Response
-	// CounterCollector 设置Metric的Value，并将Metric的值上报Prometheus
-	CounterCollector(counterVec *prometheus.CounterVec, labels map[string]string) error
+	// CounterCollector Metric的Value自增 +1，并将Metric的值上报Prometheus
+	CounterCollector(counterVec *prometheus.CounterVec, labels map[string]string)
 }

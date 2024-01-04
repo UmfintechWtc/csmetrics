@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	gauge        = &GaugeValues{}
-	resultStatus = make(map[string]float64)
-	cmdOutput    []byte
+	gauge     = &GaugeValues{}
+	cmdOutput []byte
 )
 
 type GaugeValues struct {
@@ -21,6 +20,7 @@ type GaugeValues struct {
 }
 
 func executeCommandWithFloat64(cliK string, cmdTemplate string) (map[string]float64, *common.Response) {
+	resultStatus := make(map[string]float64)
 	cmd := fmt.Sprintf(cmdTemplate, cliK)
 	subCommands := strings.Split(cmd, " | ")
 	for _, subCmd := range subCommands {

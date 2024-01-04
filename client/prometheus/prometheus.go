@@ -11,7 +11,7 @@ type PrometheusMetricsType interface {
 	// CreateCounter 创建Counter Metric类型方法
 	CreateCounter(metricName, metricHelp string, labels []string) *prometheus.CounterVec
 	// CreateHistogram 创建Histogram Metric类型方法
-	CreateHistogram(metricName, metricHelp string, labels []string) *prometheus.HistogramVec
+	CreateHistogram(metricName, metricHelp string, bucket []float64, labels []string) *prometheus.HistogramVec
 	// CreateSummary 创建Summary Metric类型方法
 	CreateSummary(metricName, metricHelp string, labels []string) *prometheus.SummaryVec
 }

@@ -33,16 +33,25 @@ func SetRouter(
 		)
 	}
 	r := gin.New()
+	// 绑定 prom.GaugeRegistry，包含4种类型数据
+	r.GET(common.URL_PREFIX["all"], func(c *gin.Context) {
+		prom.Gauge(mode, c)
+		prom.Counter(mode, c)
+		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
+		handler.ServeHTTP(c.Writer, c.Request)
+	})
 	// 绑定 /gmetrics 路由，调用Gauge方法
-	r.GET("/gmetrics", func(c *gin.Context) {
+	r.GET(common.URL_PREFIX["gauge"], func(c *gin.Context) {
 		prom.Gauge(mode, c)
 		handler := promhttp.HandlerFor(prom.GaugeRegistry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
-	r.GET("/gmetrics/*path", prom.Counter)
 	// 绑定 /cmetrics 路由，调用Counter方法
-	r.GET("/cmetrics", prom.Counter)
-	r.GET("/cmetrics/*path", prom.Counter)
+	r.GET(common.URL_PREFIX["counter"], func(c *gin.Context) {
+		prom.Counter(mode, c)
+		handler := promhttp.HandlerFor(prom.CounterRegistry, prom.PromOpts)
+		handler.ServeHTTP(c.Writer, c.Request)
+	})
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"code":    http.StatusNotFound,

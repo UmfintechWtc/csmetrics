@@ -1,27 +1,81 @@
 package handler
 
 import (
-	"fmt"
+	"collect-metrics/common"
+	config "collect-metrics/module"
+	"net/http"
+	"strconv"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var urlStatusCounter = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "tianciwang",
-		Help: "Total number of HTTP requests",
-	},
-	[]string{"url", "status_code"},
+var (
+	counterMetricOnce sync.Once
+	counterRegistry   *prometheus.Registry
+	getRequestsCount  *prometheus.CounterVec
+	code              string
 )
 
-func init() {
-	// 注册 Counter 到 Prometheus
-	prometheus.MustRegister(urlStatusCounter)
-}
-func (p *PrometheusHandler) Counter(c *gin.Context) {
-	fmt.Println("eeeeeeeeeeeeeeeeeeeeeeeeeeee")
-	url := c.Request.URL.Path
-	statusCode := c.Writer.Status()
-	urlStatusCounter.WithLabelValues(url, fmt.Sprintf("%d", statusCode)).Inc()
+func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
+	// 初始化配置
+	config, err := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
+	if err != nil {
+		c.JSON(
+			http.StatusBadRequest,
+			common.NewErrorResponse(
+				common.PARSE_CONFIG_ERROR,
+				255,
+				err,
+			),
+		)
+		return
+	}
+	counterMetricOnce.Do(func() {
+		if mode == common.RUN_WITH_DEBUG {
+			// 当为debug 模式时，开启内置Go 运行时相关指标
+			p.CounterRegistry.MustRegister(
+				prometheus.NewGoCollector(),
+			)
+			// 当为debug 模式时，开启内置当前进程相关指标
+			p.CounterRegistry.MustRegister(
+				prometheus.NewProcessCollector(
+					prometheus.ProcessCollectorOpts{},
+				),
+			)
+			counterRegistry = p.CounterRegistry
+		} else {
+			counterRegistry = p.AllRegistry
+		}
+		getRequestsCount = p.PromService.CreateCounter(
+			config.Metrics.Counter.Request.MetricName,
+			config.Metrics.Counter.Request.MetricHelp,
+			common.COUNTER_REQUESTS_METRICS_LABELS,
+		)
+		counterRegistry.MustRegister(getRequestsCount)
+
+	})
+
+	if mode == common.RUN_WITH_DEBUG {
+		num1 := common.RandomInt()
+		if num1 <= 20 {
+			code = "100"
+		} else if 20 < num1 && num1 <= 40 {
+			code = "200"
+		} else if 40 < num1 && num1 <= 60 {
+			code = "300"
+		} else if 60 < num1 && num1 <= 80 {
+			code = "400"
+		} else if 80 < num1 && num1 <= 100 {
+			code = "500"
+		}
+	} else {
+		code = strconv.Itoa(c.Writer.Status())
+	}
+	setLabelsValue := map[string]string{
+		common.COUNTER_REQUESTS_METRICS_LABELS[0]: c.Request.URL.Path,
+		common.COUNTER_REQUESTS_METRICS_LABELS[1]: code,
+	}
+	p.Collect.CounterCollector(getRequestsCount, setLabelsValue)
 }

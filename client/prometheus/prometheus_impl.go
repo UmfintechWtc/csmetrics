@@ -37,11 +37,12 @@ func (m *MetricsImpl) CreateCounter(metricName, metricHelp string, labelNames []
 	return CounterMetric
 }
 
-func (m *MetricsImpl) CreateHistogram(metricName, metricHelp string, labelNames []string) *prometheus.HistogramVec {
+func (m *MetricsImpl) CreateHistogram(metricName, metricHelp string, bucket []float64, labelNames []string) *prometheus.HistogramVec {
 	HistogramMetric := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: metricName,
-			Help: metricHelp,
+			Name:    metricName,
+			Help:    metricHelp,
+			Buckets: bucket,
 		},
 		labelNames,
 	)

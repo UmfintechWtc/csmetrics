@@ -3,7 +3,7 @@ server:
   listen: 0.0.0.0
   port: 9099
   periodSeconds: 60s
-  # debug | release | test, default: debug
+  # debug | release, default: debug
   mode: release
 
 metrics:
@@ -34,3 +34,8 @@ metrics:
         # - "wtc"
       metric_name: "tty"
       metric_help: "get session order by user"
+  counter:
+    requests:
+      metric_name: "requests"
+      metric_help: "Total number of HTTP requests"
+    

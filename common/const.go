@@ -17,10 +17,17 @@ const (
 )
 
 var (
-	BASE_LABELS                      = []string{"hostname", "ip"}
-	GAUGE_PROCESS_METRICS_LABELS     = append(BASE_LABELS, "user")
-	GAUGE_NETSTAT_METRICS_LABELS     = append(BASE_LABELS, "state")
-	GAUGE_SESSION_METRICS_LABELS     = append(BASE_LABELS, "user")
-	COUNTER_INTERFACE_METRICS_LABELS = append(BASE_LABELS, "code", "path")
-	RUN_MODE                         = []string{"debug", "release", "test"}
+	BASE_LABELS                     = []string{"hostname", "ip"}
+	GAUGE_PROCESS_METRICS_LABELS    = append(BASE_LABELS, "user")
+	GAUGE_NETSTAT_METRICS_LABELS    = append(BASE_LABELS, "state")
+	GAUGE_SESSION_METRICS_LABELS    = append(BASE_LABELS, "user")
+	COUNTER_REQUESTS_METRICS_LABELS = []string{"path", "code"}
+	RUN_MODE                        = []string{"debug", "release"}
+	URL_PREFIX                      = map[string]string{
+		"gauge":     "/gmetrics",
+		"counter":   "/cmetrics",
+		"summary":   "/smetrics",
+		"histogram": "/hmetrics",
+		"all":       "/metrics",
+	}
 )
