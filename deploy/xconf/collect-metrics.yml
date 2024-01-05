@@ -40,24 +40,34 @@ metrics:
       metric_help: "Total number of HTTP requests"
   histogram:
     delay:
-      metric_name: "delay_total"
-      metric_help: "Total number of HTTP requests delay"
+      metric_name: "histogram_delay_total"
+      metric_help: "Total number of HTTP requests delay with histogram"
       buckets:
         # 支持切片和线性，若都开启线性优先级高
         linear:
           enabled: True
           range:
-            # [10 20 30 40 50]
+            # 边界值: [10 20 30 40 50]
             start: 10
             width: 10
             count: 5
         slice:
-          enabled: true
+          enabled: True
           range:
-            # [10 20 30 40 50]
+            # 边界值: [10 20 30 40 50]
             - 10
             - 20
             - 30
             - 40
             - 50
-    
+  summary:
+    delay:
+      metric_name: "summary_delay_total"
+      metric_help: "Total number of HTTP requests delay with summary"
+      median: 
+        # 中位数: 度量指标
+        10: 10  # example: 采样10%样本，请求小于10ms
+        20: 20  # example: 采样20%样本，请求小于20ms
+        30: 30  # example: 采样30%样本，请求小于30ms
+        40: 40  # example: 采样40%样本，请求小于40ms
+        50: 50  # example: 采样50%样本，请求小于50ms

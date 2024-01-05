@@ -9,6 +9,8 @@ const (
 	EXECUTE_CLI_ERROR             = 10005
 	FORMAT_CLI_QUERY_ERROR        = 10006
 	GET_HOSTINFO_ERROR            = 10007
+	HISTOGRAM_BUCKET_ERROR        = 10008
+	SUMMARY_BUCKET_ERROR          = 10009
 	FAILED_CODE                   = "Failed"
 	SUCCEED_CODE                  = "Succeed"
 	RUN_WITH_DEBUG                = "debug"
@@ -22,6 +24,8 @@ var (
 	GAUGE_NETSTAT_METRICS_LABELS    = append(BASE_LABELS, "state")
 	GAUGE_SESSION_METRICS_LABELS    = append(BASE_LABELS, "user")
 	COUNTER_REQUESTS_METRICS_LABELS = []string{"path", "code"}
+	HISTOGRAM_DELAY_METRICS_LABELS  = []string{"code"}
+	SUMMARY_DELAY_METRICS_LABELS    = []string{"code"}
 	RUN_MODE                        = []string{"debug", "release"}
 	URL_PREFIX                      = map[string]string{
 		"gauge":     "/gmetrics",
@@ -29,5 +33,6 @@ var (
 		"summary":   "/smetrics",
 		"histogram": "/hmetrics",
 		"all":       "/metrics",
+		"noroute":   "/metrics/*path",
 	}
 )

@@ -13,5 +13,5 @@ type PrometheusMetricsType interface {
 	// CreateHistogram 创建Histogram Metric类型方法
 	CreateHistogram(metricName, metricHelp string, bucket []float64, labels []string) *prometheus.HistogramVec
 	// CreateSummary 创建Summary Metric类型方法
-	CreateSummary(metricName, metricHelp string, labels []string) *prometheus.SummaryVec
+	CreateSummary(metricName, metricHelp string, median map[float64]float64, labels []string) *prometheus.SummaryVec
 }

@@ -49,11 +49,12 @@ func (m *MetricsImpl) CreateHistogram(metricName, metricHelp string, bucket []fl
 	return HistogramMetric
 }
 
-func (m *MetricsImpl) CreateSummary(metricName, metricHelp string, labelNames []string) *prometheus.SummaryVec {
+func (m *MetricsImpl) CreateSummary(metricName, metricHelp string, median map[float64]float64, labelNames []string) *prometheus.SummaryVec {
 	SummaryMetric := prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
-			Name: metricName,
-			Help: metricHelp,
+			Name:       metricName,
+			Help:       metricHelp,
+			Objectives: median,
 		},
 		labelNames,
 	)

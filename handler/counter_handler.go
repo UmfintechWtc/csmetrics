@@ -73,9 +73,9 @@ func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
 	} else {
 		counterCode = strconv.Itoa(c.Writer.Status())
 	}
-	setLabelsValue := map[string]string{
+	setCounterLabelsValue := map[string]string{
 		common.COUNTER_REQUESTS_METRICS_LABELS[0]: c.Request.URL.Path,
 		common.COUNTER_REQUESTS_METRICS_LABELS[1]: counterCode,
 	}
-	p.Collect.CounterCollector(getRequestsCount, setLabelsValue)
+	p.Collect.CounterCollector(getRequestsCount, setCounterLabelsValue)
 }
