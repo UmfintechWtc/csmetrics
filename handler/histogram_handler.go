@@ -52,8 +52,8 @@ func (p *PrometheusHandler) Histogram(mode string, c *gin.Context) {
 		)
 		return
 	}
-	histogramRegistry := p.Registry(p.AllRegistry, mode)
 	histogramMetricOnce.Do(func() {
+		histogramRegistry := p.Registry(p.AllRegistry, mode)
 		histogramRequestsDelay = p.PromService.CreateHistogram(
 			config.Metrics.Histogram.Delay.MetricName,
 			config.Metrics.Histogram.Delay.MetricHelp,

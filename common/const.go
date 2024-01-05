@@ -23,7 +23,7 @@ var (
 	GAUGE_PROCESS_METRICS_LABELS    = append(BASE_LABELS, "user")
 	GAUGE_NETSTAT_METRICS_LABELS    = append(BASE_LABELS, "state")
 	GAUGE_SESSION_METRICS_LABELS    = append(BASE_LABELS, "user")
-	COUNTER_REQUESTS_METRICS_LABELS = []string{"path", "code"}
+	COUNTER_REQUESTS_METRICS_LABELS = []string{"path"}
 	HISTOGRAM_DELAY_METRICS_LABELS  = []string{"code"}
 	SUMMARY_DELAY_METRICS_LABELS    = []string{"code"}
 	RUN_MODE                        = []string{"debug", "release"}

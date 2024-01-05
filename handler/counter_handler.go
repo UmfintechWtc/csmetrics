@@ -31,8 +31,8 @@ func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
 		)
 		return
 	}
-	counterRegistry := p.Registry(p.AllRegistry, mode)
 	counterMetricOnce.Do(func() {
+		counterRegistry := p.Registry(p.AllRegistry, mode)
 		getRequestsCount = p.PromService.CreateCounter(
 			config.Metrics.Counter.Request.MetricName,
 			config.Metrics.Counter.Request.MetricHelp,
@@ -59,7 +59,7 @@ func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
 	}
 	setCounterLabelsValue := map[string]string{
 		common.COUNTER_REQUESTS_METRICS_LABELS[0]: c.Request.URL.Path,
-		common.COUNTER_REQUESTS_METRICS_LABELS[1]: counterCode,
+		// common.COUNTER_REQUESTS_METRICS_LABELS[1]: counterCode,
 	}
 	p.Collect.CounterCollector(getRequestsCount, setCounterLabelsValue)
 }

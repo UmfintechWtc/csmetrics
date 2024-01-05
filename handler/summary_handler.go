@@ -14,7 +14,6 @@ import (
 
 var (
 	summaryMetricOnce      sync.Once
-	summaryRegistry        *prometheus.Registry
 	summaryRequestsDelay   *prometheus.SummaryVec
 	summaryBucketCondition = make(map[float64]float64)
 )
@@ -48,8 +47,8 @@ func (p *PrometheusHandler) Summary(mode string, c *gin.Context) {
 			summaryBucketCondition[percent/100] = median
 		}
 	}
-	summaryRegistry := p.Registry(p.AllRegistry, mode)
 	summaryMetricOnce.Do(func() {
+		summaryRegistry := p.Registry(p.AllRegistry, mode)
 		summaryRequestsDelay = p.PromService.CreateSummary(
 			config.Metrics.Summary.Delay.MetricName,
 			config.Metrics.Summary.Delay.MetricHelp,
