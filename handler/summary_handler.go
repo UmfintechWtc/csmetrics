@@ -18,21 +18,9 @@ var (
 	summaryBucketCondition = make(map[float64]float64)
 )
 
-func (p *PrometheusHandler) Summary(mode string, c *gin.Context) {
-	config, err := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			common.NewErrorResponse(
-				common.PARSE_CONFIG_ERROR,
-				255,
-				err,
-			),
-		)
-		return
-	}
+func (p *PrometheusHandler) Summary(mode string, config config.Summary, c *gin.Context) {
 	// 校验中位数
-	if len(config.Metrics.Summary.Delay.Median) == 0 {
+	if len(config.Delay.Median) == 0 {
 		c.JSON(
 			http.StatusBadRequest,
 			common.NewErrorResponse(
@@ -43,15 +31,15 @@ func (p *PrometheusHandler) Summary(mode string, c *gin.Context) {
 		)
 		return
 	} else {
-		for percent, median := range config.Metrics.Summary.Delay.Median {
+		for percent, median := range config.Delay.Median {
 			summaryBucketCondition[percent/100] = median
 		}
 	}
 	summaryMetricOnce.Do(func() {
 		summaryRegistry := p.Registry(p.AllRegistry, mode)
 		summaryRequestsDelay = p.PromService.CreateSummary(
-			config.Metrics.Summary.Delay.MetricName,
-			config.Metrics.Summary.Delay.MetricHelp,
+			config.Delay.MetricName,
+			config.Delay.MetricHelp,
 			summaryBucketCondition,
 			common.SUMMARY_DELAY_METRICS_LABELS,
 		)

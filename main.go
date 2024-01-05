@@ -7,6 +7,7 @@ import (
 	"collect-metrics/common"
 	"collect-metrics/handler"
 	config "collect-metrics/module"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 func SetRouter(
 	prom *handler.PrometheusHandler,
 	mode string,
+	config config.CateGoryMetrics,
 ) *gin.Engine {
 	if mode == "" {
 		gin.SetMode(gin.ReleaseMode)
@@ -35,16 +37,16 @@ func SetRouter(
 	r := gin.New()
 	// 绑定 prom.AllRegistry，包含4种类型数据
 	r.GET("/metrics", func(c *gin.Context) {
-		prom.Gauge(mode, c)
-		prom.Counter(mode, c)
-		prom.Histogram(mode, c)
-		prom.Summary(mode, c)
+		prom.Gauge(mode, config.Gauge, c)
+		prom.Counter(mode, config.Counter, c)
+		prom.Histogram(mode, config.Histogram, c)
+		prom.Summary(mode, config.Summary, c)
 		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
 	// 绑定 prom.AllRegistry，仅包含Counter类型
 	r.GET("/metrics/*path", func(c *gin.Context) {
-		prom.Counter(mode, c)
+		prom.Counter(mode, config.Counter, c)
 		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
@@ -58,8 +60,13 @@ func SetRouter(
 }
 
 func main() {
+	// 配置命令行参数
+	var configFilePath string
+	flag.StringVar(&configFilePath, "config", common.COLLECT_METRICS_CONFIG_PATH, "配置文件")
+	flag.Parse()
+	fmt.Println(configFilePath)
 	// 初始化配置
-	config, err := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
+	config, err := config.LoadInternalConfig(configFilePath)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -78,6 +85,7 @@ func main() {
 	r := SetRouter(
 		newPrometheusHandler,
 		config.Server.Mode,
+		config.Metrics,
 	)
 	// 启动http服务
 	svr := &http.Server{

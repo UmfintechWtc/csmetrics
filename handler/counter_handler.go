@@ -3,7 +3,6 @@ package handler
 import (
 	"collect-metrics/common"
 	config "collect-metrics/module"
-	"net/http"
 	"strconv"
 	"sync"
 
@@ -17,25 +16,13 @@ var (
 	counterCode       string
 )
 
-func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
+func (p *PrometheusHandler) Counter(mode string, config config.Counter, c *gin.Context) {
 	// 初始化配置
-	config, err := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			common.NewErrorResponse(
-				common.PARSE_CONFIG_ERROR,
-				255,
-				err,
-			),
-		)
-		return
-	}
 	counterMetricOnce.Do(func() {
 		counterRegistry := p.Registry(p.AllRegistry, mode)
 		getRequestsCount = p.PromService.CreateCounter(
-			config.Metrics.Counter.Request.MetricName,
-			config.Metrics.Counter.Request.MetricHelp,
+			config.Request.MetricName,
+			config.Request.MetricHelp,
 			common.COUNTER_REQUESTS_METRICS_LABELS,
 		)
 		counterRegistry.MustRegister(getRequestsCount)

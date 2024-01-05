@@ -18,25 +18,17 @@ var (
 	histogramBucketCondition []float64
 )
 
-func (p *PrometheusHandler) Histogram(mode string, c *gin.Context) {
-	config, err := config.LoadInternalConfig(common.COLLECT_METRICS_CONFIG_PATH)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			common.NewErrorResponse(
-				common.PARSE_CONFIG_ERROR,
-				255,
-				err,
-			),
-		)
-		return
-	}
+func (p *PrometheusHandler) Histogram(mode string, config config.Histogram, c *gin.Context) {
 	// 校验buckets边界值
-	linear := config.Metrics.Histogram.Delay.Buckets.Linear
-	slice := config.Metrics.Histogram.Delay.Buckets.Slice
+	linear := config.Delay.Buckets.Linear
+	slice := config.Delay.Buckets.Slice
 	// 如果线性、切片都开启 或者仅开启线性，则以线性为准
 	if (linear.Enabled && slice.Enabled) || (linear.Enabled && !slice.Enabled) {
-		histogramBucketCondition = prometheus.LinearBuckets(linear.Range["start"], linear.Range["width"], int(linear.Range["count"]))
+		histogramBucketCondition = prometheus.LinearBuckets(
+			linear.Range["start"],
+			linear.Range["width"],
+			int(linear.Range["count"]),
+		)
 		// 以切片为准
 	} else if !linear.Enabled && slice.Enabled {
 		histogramBucketCondition = slice.Range
@@ -55,8 +47,8 @@ func (p *PrometheusHandler) Histogram(mode string, c *gin.Context) {
 	histogramMetricOnce.Do(func() {
 		histogramRegistry := p.Registry(p.AllRegistry, mode)
 		histogramRequestsDelay = p.PromService.CreateHistogram(
-			config.Metrics.Histogram.Delay.MetricName,
-			config.Metrics.Histogram.Delay.MetricHelp,
+			config.Delay.MetricName,
+			config.Delay.MetricHelp,
 			histogramBucketCondition,
 			common.HISTOGRAM_DELAY_METRICS_LABELS,
 		)
