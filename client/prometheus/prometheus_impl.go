@@ -10,11 +10,6 @@ type MetricsImpl struct {
 	Cli cli.ShellCli
 }
 
-func (m *MetricsImpl) Register() *prometheus.Registry {
-	register := prometheus.NewRegistry()
-	return register
-}
-
 func (m *MetricsImpl) CreateGauge(metricName, metricHelp string, labelNames []string) *prometheus.GaugeVec {
 	GaugeMetric := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{

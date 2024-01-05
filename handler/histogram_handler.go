@@ -14,7 +14,6 @@ import (
 
 var (
 	histogramMetricOnce      sync.Once
-	histogramRegistry        *prometheus.Registry
 	histogramRequestsDelay   *prometheus.HistogramVec
 	histogramBucketCondition []float64
 )
@@ -53,23 +52,8 @@ func (p *PrometheusHandler) Histogram(mode string, c *gin.Context) {
 		)
 		return
 	}
-
+	histogramRegistry := p.Registry(p.AllRegistry, mode)
 	histogramMetricOnce.Do(func() {
-		if mode == common.RUN_WITH_DEBUG {
-			// 当为debug 模式时，开启内置Go 运行时相关指标
-			p.HistogramRegistry.MustRegister(
-				prometheus.NewGoCollector(),
-			)
-			// 当为debug 模式时，开启内置当前进程相关指标
-			p.HistogramRegistry.MustRegister(
-				prometheus.NewProcessCollector(
-					prometheus.ProcessCollectorOpts{},
-				),
-			)
-			histogramRegistry = p.HistogramRegistry
-		} else {
-			histogramRegistry = p.AllRegistry
-		}
 		histogramRequestsDelay = p.PromService.CreateHistogram(
 			config.Metrics.Histogram.Delay.MetricName,
 			config.Metrics.Histogram.Delay.MetricHelp,

@@ -46,33 +46,6 @@ func SetRouter(
 	r.GET("/metrics/*path", func(c *gin.Context) {
 		prom.Counter(mode, c)
 		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
-		if mode == common.RUN_WITH_DEBUG {
-			handler = promhttp.HandlerFor(prom.CounterRegistry, prom.PromOpts)
-		}
-		handler.ServeHTTP(c.Writer, c.Request)
-	})
-	// 绑定 /gmetrics 路由，调用Gauge方法
-	r.GET(common.URL_PREFIX["gauge"], func(c *gin.Context) {
-		prom.Gauge(mode, c)
-		handler := promhttp.HandlerFor(prom.GaugeRegistry, prom.PromOpts)
-		handler.ServeHTTP(c.Writer, c.Request)
-	})
-	// 绑定 /cmetrics 路由，调用Counter方法
-	r.GET(common.URL_PREFIX["counter"], func(c *gin.Context) {
-		prom.Counter(mode, c)
-		handler := promhttp.HandlerFor(prom.CounterRegistry, prom.PromOpts)
-		handler.ServeHTTP(c.Writer, c.Request)
-	})
-	// 绑定 /hmetrics 路由，调用Histogram方法
-	r.GET(common.URL_PREFIX["histogram"], func(c *gin.Context) {
-		prom.Histogram(mode, c)
-		handler := promhttp.HandlerFor(prom.HistogramRegistry, prom.PromOpts)
-		handler.ServeHTTP(c.Writer, c.Request)
-	})
-	// 绑定 /smetrics 路由，调用Summary方法
-	r.GET(common.URL_PREFIX["summary"], func(c *gin.Context) {
-		prom.Summary(mode, c)
-		handler := promhttp.HandlerFor(prom.SummaryRegistry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
 	r.NoRoute(func(c *gin.Context) {

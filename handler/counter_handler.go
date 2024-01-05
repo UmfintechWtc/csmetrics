@@ -13,7 +13,6 @@ import (
 
 var (
 	counterMetricOnce sync.Once
-	counterRegistry   *prometheus.Registry
 	getRequestsCount  *prometheus.CounterVec
 	counterCode       string
 )
@@ -32,29 +31,14 @@ func (p *PrometheusHandler) Counter(mode string, c *gin.Context) {
 		)
 		return
 	}
+	counterRegistry := p.Registry(p.AllRegistry, mode)
 	counterMetricOnce.Do(func() {
-		if mode == common.RUN_WITH_DEBUG {
-			// 当为debug 模式时，开启内置Go 运行时相关指标
-			p.CounterRegistry.MustRegister(
-				prometheus.NewGoCollector(),
-			)
-			// 当为debug 模式时，开启内置当前进程相关指标
-			p.CounterRegistry.MustRegister(
-				prometheus.NewProcessCollector(
-					prometheus.ProcessCollectorOpts{},
-				),
-			)
-			counterRegistry = p.CounterRegistry
-		} else {
-			counterRegistry = p.AllRegistry
-		}
 		getRequestsCount = p.PromService.CreateCounter(
 			config.Metrics.Counter.Request.MetricName,
 			config.Metrics.Counter.Request.MetricHelp,
 			common.COUNTER_REQUESTS_METRICS_LABELS,
 		)
 		counterRegistry.MustRegister(getRequestsCount)
-
 	})
 
 	if mode == common.RUN_WITH_DEBUG {

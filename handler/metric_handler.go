@@ -3,6 +3,7 @@ package handler
 import (
 	p "collect-metrics/client/prometheus"
 	"collect-metrics/collector"
+	"collect-metrics/common"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -13,14 +14,23 @@ type PrometheusHandler struct {
 	PromOpts    promhttp.HandlerOpts
 	Collect     collector.CollectorValues
 	AllRegistry *prometheus.Registry
-	// Debug 调试 Gauge
-	GaugeRegistry *prometheus.Registry
-	// Debug 调试 Counter
-	CounterRegistry *prometheus.Registry
-	// Debug 调试 Summary
-	SummaryRegistry *prometheus.Registry
-	// Debug 调试 Histogram
-	HistogramRegistry *prometheus.Registry
+}
+
+// 初始化注册表
+func (p *PrometheusHandler) Registry(registry *prometheus.Registry, mode string) *prometheus.Registry {
+	if mode == common.RUN_WITH_DEBUG {
+		// 当为debug 模式时，开启内置Go 运行时相关指标
+		registry.MustRegister(
+			prometheus.NewGoCollector(),
+		)
+		// 当为debug 模式时，开启内置当前进程相关指标
+		registry.MustRegister(
+			prometheus.NewProcessCollector(
+				prometheus.ProcessCollectorOpts{},
+			),
+		)
+	}
+	return registry
 }
 
 // NewPrometheusHandler 用于构造 PrometheusHandler 实例
@@ -29,13 +39,5 @@ func NewPrometheusHandler(p p.PrometheusMetricsType, collector collector.Collect
 		PromService: p,
 		Collect:     collector,
 		AllRegistry: prometheus.NewRegistry(),
-		// 初始化 Gauge Metric 注册表
-		GaugeRegistry: prometheus.NewRegistry(),
-		// 初始化 Counter Metric 注册表
-		CounterRegistry: prometheus.NewRegistry(),
-		// 初始化 Summary Metric 注册表
-		SummaryRegistry: prometheus.NewRegistry(),
-		// 初始化 Histogram Metric 注册表
-		HistogramRegistry: prometheus.NewRegistry(),
 	}
 }

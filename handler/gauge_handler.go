@@ -12,7 +12,6 @@ import (
 
 var (
 	gaugeMetricOnce sync.Once
-	gaugeRegistry   *prometheus.Registry
 	getProcessCount *prometheus.GaugeVec
 	getSessionCount *prometheus.GaugeVec
 	getTCPCount     *prometheus.GaugeVec
@@ -39,23 +38,9 @@ func (p *PrometheusHandler) Gauge(mode string, c *gin.Context) {
 		)
 		return
 	}
+	gaugeRegistry := p.Registry(p.AllRegistry, mode)
 	// 仅在第一次运行的时候初始化Label及注册Metric
 	gaugeMetricOnce.Do(func() {
-		if mode == common.RUN_WITH_DEBUG {
-			// 当为debug 模式时，开启内置Go 运行时相关指标
-			p.GaugeRegistry.MustRegister(
-				prometheus.NewGoCollector(),
-			)
-			// 当为debug 模式时，开启内置当前进程相关指标
-			p.GaugeRegistry.MustRegister(
-				prometheus.NewProcessCollector(
-					prometheus.ProcessCollectorOpts{},
-				),
-			)
-			gaugeRegistry = p.GaugeRegistry
-		} else {
-			gaugeRegistry = p.AllRegistry
-		}
 		getProcessCount = p.PromService.CreateGauge(config.Metrics.Gauge.PS.MetricName, config.Metrics.Gauge.PS.MetricHelp, common.GAUGE_PROCESS_METRICS_LABELS)
 		gaugeRegistry.MustRegister(getProcessCount)
 		getSessionCount = p.PromService.CreateGauge(config.Metrics.Gauge.Session.MetricName, config.Metrics.Gauge.Session.MetricHelp, common.GAUGE_SESSION_METRICS_LABELS)

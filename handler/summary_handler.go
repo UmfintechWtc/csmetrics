@@ -48,22 +48,8 @@ func (p *PrometheusHandler) Summary(mode string, c *gin.Context) {
 			summaryBucketCondition[percent/100] = median
 		}
 	}
+	summaryRegistry := p.Registry(p.AllRegistry, mode)
 	summaryMetricOnce.Do(func() {
-		if mode == common.RUN_WITH_DEBUG {
-			// 当为debug 模式时，开启内置Go 运行时相关指标
-			p.SummaryRegistry.MustRegister(
-				prometheus.NewGoCollector(),
-			)
-			// 当为debug 模式时，开启内置当前进程相关指标
-			p.SummaryRegistry.MustRegister(
-				prometheus.NewProcessCollector(
-					prometheus.ProcessCollectorOpts{},
-				),
-			)
-			summaryRegistry = p.SummaryRegistry
-		} else {
-			summaryRegistry = p.AllRegistry
-		}
 		summaryRequestsDelay = p.PromService.CreateSummary(
 			config.Metrics.Summary.Delay.MetricName,
 			config.Metrics.Summary.Delay.MetricHelp,
