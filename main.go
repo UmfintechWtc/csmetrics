@@ -42,7 +42,7 @@ func SetRouter(
 		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
-	// 绑定 prom.CounterRegistry，统计路径
+	// 绑定 prom.AllRegistry，仅包含Counter类型
 	r.GET("/metrics/*path", func(c *gin.Context) {
 		prom.Counter(mode, c)
 		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
