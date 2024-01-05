@@ -4,7 +4,7 @@ server:
   port: 9099
   periodSeconds: 60s
   # debug | release, default: debug
-  mode: release
+  mode: debug
 
 metrics:
   # gauage类型指标
