@@ -22,8 +22,8 @@ type Server struct {
 	GlobalPeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
 }
 type CateGoryMetrics struct {
-	Gauge     Gauge     `mapstructure:"gauge" binding:"required"`
-	Counter   Counter   `mapstructure:"counter" binding:"required"`
+	Gauge Gauge `mapstructure:"gauge" binding:"required"`
+	// Counter   Counter   `mapstructure:"counter" binding:"required"`
 	Histogram Histogram `mapstructure:"histogram" binding:"required"`
 	Summary   Summary   `mapstructure:"summary" binding:"required"`
 }
@@ -33,9 +33,10 @@ type Gauge struct {
 	PS      Process `mapstructure:"process" binding:"required"`
 	Session Tty     `mapstructure:"session" binding:"required"`
 }
-type Counter struct {
-	Request Requests `mapstructure:"requests" binding:"required"`
-}
+
+//	type Counter struct {
+//		Request Requests `mapstructure:"requests" binding:"required"`
+//	}
 type Histogram struct {
 	Delay HistogramDelay `mapstructure:"delay" binding:"required"`
 }
@@ -44,38 +45,39 @@ type Summary struct {
 }
 type Netstat struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
-	VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
-	MetricName    string         `mapstructure:"metric_name" binding:"required"`
-	MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
+	// VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
+	// MetricName    string         `mapstructure:"metric_name" binding:"required"`
+	// MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
 	// MetricLabels  []string       `mapstructure:"metric_labels" binding:"min=1"`
 }
 type Process struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
-	VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
-	MetricName    string         `mapstructure:"metric_name" binding:"required"`
-	MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
+	// VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
+	// MetricName    string         `mapstructure:"metric_name" binding:"required"`
+	// MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
 	// MetricLabels  []string       `mapstructure:"metric_labels" binding:"min=1"`
 }
 type Tty struct {
 	PeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
-	VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
-	MetricName    string         `mapstructure:"metric_name" binding:"required"`
-	MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
+	// VerifyType    []string       `mapstructure:"verify_type" binding:"omitempty"`
+	// MetricName    string         `mapstructure:"metric_name" binding:"required"`
+	// MetricHelp    string         `mapstructure:"metric_help" binding:"omitempty"`
 	// MetricLabels  []string       `json:"metric_labels" json:"metric_labels" binding:"min=1"`
 }
-type Requests struct {
-	MetricName string `mapstructure:"metric_name" binding:"required"`
-	MetricHelp string `mapstructure:"metric_help" binding:"omitempty"`
-}
+
+//	type Requests struct {
+//		MetricName string `mapstructure:"metric_name" binding:"required"`
+//		MetricHelp string `mapstructure:"metric_help" binding:"omitempty"`
+//	}
 type HistogramDelay struct {
-	MetricName string              `mapstructure:"metric_name" binding:"required"`
-	MetricHelp string              `mapstructure:"metric_help" binding:"omitempty"`
-	Buckets    HistogramDelayRange `mapstructure:"buckets" binding:"omitempty"`
+	// MetricName string              `mapstructure:"metric_name" binding:"required"`
+	// MetricHelp string              `mapstructure:"metric_help" binding:"omitempty"`
+	Buckets HistogramDelayRange `mapstructure:"buckets" binding:"omitempty"`
 }
 type SummaryDelay struct {
-	MetricName string              `mapstructure:"metric_name" binding:"required"`
-	MetricHelp string              `mapstructure:"metric_help" binding:"omitempty"`
-	Median     map[float64]float64 `mapstructure:"median" binding:"omitempty"`
+	// MetricName string              `mapstructure:"metric_name" binding:"required"`
+	// MetricHelp string              `mapstructure:"metric_help" binding:"omitempty"`
+	Median map[float64]float64 `mapstructure:"median" binding:"omitempty"`
 }
 type HistogramDelayRange struct {
 	Linear struct {

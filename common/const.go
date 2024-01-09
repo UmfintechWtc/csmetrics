@@ -36,26 +36,81 @@ const RUN_WITH_DEBUG string = "debug"
 // 运行模式 Release
 const RUN_WITH_RELEASE string = "release"
 
-// Metrics 基础Label
-var BASE_LABELS []string = []string{"hostname", "ip"}
+// netstat 获取 tcp 连接状态命令模板
+const NetstatCmd string = "netstat -an | grep tcp | grep -v grep | awk '{print $NF}' | sort | uniq -c"
 
-// Gauge Process Metric Label
-var GAUGE_PROCESS_METRICS_LABELS []string = append(BASE_LABELS, "user")
+// netstat Metric Name
+const NetstatMetricName string = "netstat_group"
 
-// Gauge TCP Metric Label
-var GAUGE_NETSTAT_METRICS_LABELS []string = append(BASE_LABELS, "state")
+// netstat Metric Help
+const NetstatMetricHelp string = "get netstat order by state"
 
-// Gauge Session Metric Label
-var GAUGE_SESSION_METRICS_LABELS []string = append(BASE_LABELS, "user")
+// ps aux 获取不同用户管理进程数命令模板
+const ProcessCmd string = "ps aux | grep -v COMMAND | grep -v grep | awk '{print $1}' | sort | uniq -c"
 
-// Counter Requests Metric Label
-var COUNTER_REQUESTS_METRICS_LABELS []string = []string{"path"}
+// netstat Metric Name
+const ProcessMetricName string = "process_group"
 
-// Histogram Requests Delay Metric Label
-var HISTOGRAM_DELAY_METRICS_LABELS []string = []string{"code"}
+// netstat Metric Help
+const ProcessMetricHelp string = "get process order by user"
 
-// Summary Reqypes Delay Metric Label
-var SUMMARY_DELAY_METRICS_LABELS []string = []string{"code"}
+// who 获取当前用户会话数命令模板
+const SessionCmd string = "who | awk '{print $1}' | sort | uniq -c"
+
+// netstat Metric Name
+const SessionMetricName string = "session_group"
+
+// netstat Metric Help
+const SessionMetricHelp string = "get session order by user"
+
+// Gauge Metrics 定义
+var GaugeMetrics map[string]map[string]interface{} = map[string]map[string]interface{}{
+	"nenstat": {
+		"name":   "netstat_group",
+		"help":   "get netstat order by state",
+		"labels": []string{"state"},
+		"cmd":    "netstat -an | grep tcp | grep -v grep | awk '{print $NF}' | sort | uniq -c",
+	},
+	"session": {
+		"name":   "session_group",
+		"help":   "get tty order by user",
+		"labels": []string{"user"},
+		"cmd":    "who | awk '{print $1}' | sort | uniq -c",
+	},
+	"process": {
+		"name":   "process_group",
+		"help":   "get process order by user",
+		"labels": []string{"user"},
+		"cmd":    "ps aux | grep -v COMMAND | grep -v grep | awk '{print $1}' | sort | uniq -c",
+	},
+}
+
+// Counter Metrics 定义
+var CounterMetrics map[string]map[string]interface{} = map[string]map[string]interface{}{
+	"requests": {
+		"name":   "requests_url_total",
+		"help":   "get requests order by url",
+		"labels": []string{"url"},
+	},
+}
+
+// Histogram Metrics 定义
+var HistogramMetrics map[string]map[string]interface{} = map[string]map[string]interface{}{
+	"delay": {
+		"name":   "requests_delay_with_histogram",
+		"help":   "Total number of HTTP requests delay with histogram",
+		"labels": []string{"code"},
+	},
+}
+
+// Summary Metrics 定义
+var Summary map[string]map[string]interface{} = map[string]map[string]interface{}{
+	"delay": {
+		"name":   "requests_delay_with_histogram",
+		"help":   "Total number of HTTP requests delay with histogram",
+		"labels": []string{"code"},
+	},
+}
 
 // 支持的运行模式
 var RUN_MODE []string = []string{"debug", "release"}

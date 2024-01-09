@@ -1,44 +1,17 @@
 package collector
 
 import (
-	"collect-metrics/common"
+	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 // 实现 GaugeCollector 接口方法
-func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdTemplate string, cmdArgs, labelNames []string) *common.Response {
-	hostname, ip, err := common.HostInfo()
-	if err != nil {
-		return common.NewErrorResponse(
-			common.GET_HOSTINFO_ERROR,
-			255,
-			err,
-		)
-	}
-	cmd, rsp := c.Cli.GaugeValues(cmdArgs, cmdTemplate)
-	if rsp != nil {
-		return rsp
-	}
-	setLabelsValue := map[string]string{
-		labelNames[0]: hostname,
-		labelNames[1]: ip,
-	}
+func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdRes map[string]float64, cmdArgs, labelNames []string) error {
 	if len(cmdArgs) == 0 {
-		for statusType, value := range cmd.CmdRes {
-			setLabelsValue[labelNames[2]] = statusType
-			gaugeVec.With(setLabelsValue).Set(value)
-		}
+		fmt.Println(cmdRes)
 	} else {
-		for _, statusType := range cmdArgs {
-			setLabelsValue[labelNames[2]] = statusType
-			value, ok := cmd.CmdRes[statusType]
-			if ok {
-				gaugeVec.With(setLabelsValue).Set(value)
-			} else {
-				gaugeVec.With(setLabelsValue).Set(value)
-			}
-		}
+		fmt.Println(cmdRes)
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"collect-metrics/client/cli"
 	p "collect-metrics/client/prometheus"
 	"collect-metrics/collector"
 	"collect-metrics/common"
@@ -18,6 +19,7 @@ type PrometheusHandler struct {
 	PromService p.PrometheusMetricsType
 	PromOpts    promhttp.HandlerOpts
 	Collect     collector.CollectorValues
+	Cli         cli.ShellCli
 	AllRegistry *prometheus.Registry
 }
 
@@ -41,10 +43,11 @@ func (p *PrometheusHandler) Registry(registry *prometheus.Registry, mode string)
 }
 
 // NewPrometheusHandler 用于构造 PrometheusHandler 实例
-func NewPrometheusHandler(p p.PrometheusMetricsType, collector collector.CollectorValues) *PrometheusHandler {
+func NewPrometheusHandler(p p.PrometheusMetricsType, collector collector.CollectorValues, cli cli.ShellCli) *PrometheusHandler {
 	return &PrometheusHandler{
 		PromService: p,
 		Collect:     collector,
+		Cli:         cli,
 		AllRegistry: prometheus.NewRegistry(),
 	}
 }

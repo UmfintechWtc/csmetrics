@@ -1,23 +1,11 @@
 package cli
 
-import (
-	"collect-metrics/common"
-)
-
 type CliImpl struct{}
 
-func (c *CliImpl) GaugeValues(kwargs []string, cmdTemplate string) (*GaugeValues, *common.Response) {
-	cliK, err := common.ChangeInterfaceToCustomFormat(kwargs)
+func (c *CliImpl) GaugeValues(cmd string) (*GaugeValues, error) {
+	n, err := executeCommandWithFloat64(cmd)
 	if err != nil {
-		return nil, common.NewErrorResponse(
-			common.FORMAT_CLI_QUERY_ERROR,
-			255,
-			err,
-		)
-	}
-	n, rsp := executeCommandWithFloat64(cliK, cmdTemplate)
-	if rsp != nil {
-		return nil, rsp
+		return nil, err
 	}
 	gauge.CmdRes = n
 	return gauge, nil

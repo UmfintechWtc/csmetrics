@@ -4,44 +4,20 @@ server:
   port: 9099
   periodSeconds: 60s
   # debug | release, default: debug
-  mode: debug
+  mode: release
 
 metrics:
   # gauage类型指标
   gauge:
     netstat:
+      # 扫描频率
       periodSeconds: 60s
-      # 获取tcp指定连接状态，区分大小写，若不配置默认所有状态
-      verify_type:
-        - "TIME_WAIT"
-        - "ESTABLISHED"
-      metric_name: "netstat_total"
-      metric_help: "get netstat order by state"
     process:
-      periodSeconds: 60s
-      # 获取指定用户管理进程，区分大小写，若不配置获取所有用户管理进程
-      verify_type:
-        - "zabbix"
-        - "starcross"
-        - "root"
-      metric_name: "process_total"
-      metric_help: "get process order by user"
+      periodSeconds: 30s
     session:
-      periodSeconds: 60s
-      # 获取指定用户session会话数量，区分大小写，若不配置获取所有用户登录会话
-      verify_type:
-        # - "root"
-        # - "wtc"
-      metric_name: "tty_total"
-      metric_help: "get session order by user"
-  counter:
-    requests:
-      metric_name: "requests_total"
-      metric_help: "Total number of HTTP requests"
+      periodSeconds: 30s
   histogram:
     delay:
-      metric_name: "histogram_delay_total"
-      metric_help: "Total number of HTTP requests delay with histogram"
       buckets:
         # 支持切片和线性，若都开启线性优先级高
         linear:
@@ -62,8 +38,6 @@ metrics:
             - 50
   summary:
     delay:
-      metric_name: "summary_delay_total"
-      metric_help: "Total number of HTTP requests delay with summary"
       median: 
         # 中位数: 度量指标
         10: 10  # example: 采样10%样本，请求小于10ms

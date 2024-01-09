@@ -37,16 +37,11 @@ func SetRouter(
 	r := gin.New()
 	// 绑定 prom.AllRegistry，包含4种类型数据
 	r.GET("/metrics", func(c *gin.Context) {
-		prom.Gauge(mode, config.Gauge, c)
-		prom.Counter(mode, config.Counter, c)
-		prom.Histogram(mode, config.Histogram, c)
-		prom.Summary(mode, config.Summary, c)
 		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
 	// 绑定 prom.AllRegistry，仅包含Counter类型
 	r.GET("/metrics/*path", func(c *gin.Context) {
-		prom.Counter(mode, config.Counter, c)
 		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
@@ -60,11 +55,10 @@ func SetRouter(
 }
 
 func main() {
-	// 配置命令行参数
+	// 命令行参数
 	var configFilePath string
 	flag.StringVar(&configFilePath, "config", common.COLLECT_METRICS_CONFIG_PATH, "配置文件")
 	flag.Parse()
-	fmt.Println(configFilePath)
 	// 初始化配置
 	config, err := config.LoadInternalConfig(configFilePath)
 	if err != nil {
@@ -75,12 +69,15 @@ func main() {
 	// 创建 PrometheusMetricsType 对象
 	prometheusMetricsType := p.NewMetricsImpl()
 	// 创建 CollectorValues 对象
-	collectorValues := collector.NewCollectorValuesImpl(shellCli)
+	collectorValues := collector.NewCollectorValuesImpl()
 	// 创建 PrometheusHandler 对象
 	newPrometheusHandler := handler.NewPrometheusHandler(
 		prometheusMetricsType,
 		collectorValues,
+		shellCli,
 	)
+	// 初始化
+	// newPrometheusHandler.InitializeCmd(config.Metrics.Gauge)
 	// 设置 Gin 路由
 	r := SetRouter(
 		newPrometheusHandler,
