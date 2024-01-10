@@ -3,6 +3,7 @@ package handler
 import (
 	"collect-metrics/client/cli"
 	"collect-metrics/common"
+	"fmt"
 	"sync"
 	"time"
 
@@ -49,6 +50,7 @@ func formatMetricsFunc() map[string]GagueMetrics {
 func (p *PrometheusHandler) RunCli(metricType string, ch chan *cli.GaugeValues) {
 	cmd := formatMetrics[metricType].MetricCmd
 	r, _ := p.Cli.GaugeValues(cmd)
+	fmt.Println(metricType, " -- ", cmd, " -- ", r.CmdRes)
 	ch <- r
 }
 
@@ -87,21 +89,78 @@ func (p *PrometheusHandler) Gauge() {
 				localK := k
 				// 程序启动时先加载一次数据
 				p.RunCli(localK, processChannel)
-				p.BackGroundTask(localK, processChannel, processGauge)
+				// 定时写入数据
+				go func() {
+					timeTicker := time.NewTicker(3 * time.Second)
+					for {
+						select {
+						case <-timeTicker.C:
+							p.RunCli(localK, processChannel)
+
+						}
+					}
+				}()
+				// 实时接收数据
+				go func() {
+					for {
+						select {
+						case cmd := <-processChannel:
+							p.Collect.GaugeCollector(processGauge, cmd.CmdRes)
+						}
+					}
+				}()
 			case "netstat":
 				netstatChannel := make(chan *cli.GaugeValues, 1)
 				netstatGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(netstatGauge)
 				localK := k
 				p.RunCli(localK, netstatChannel)
-				p.BackGroundTask(localK, netstatChannel, netstatGauge)
+				// 定时写入数据
+				go func() {
+					timeTicker := time.NewTicker(3 * time.Second)
+					for {
+						select {
+						case <-timeTicker.C:
+							p.RunCli(localK, netstatChannel)
+
+						}
+					}
+				}()
+				// 实时接收数据
+				go func() {
+					for {
+						select {
+						case cmd := <-netstatChannel:
+							p.Collect.GaugeCollector(netstatGauge, cmd.CmdRes)
+						}
+					}
+				}()
 			case "session":
 				sessionChannel := make(chan *cli.GaugeValues, 1)
 				sessionGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(sessionGauge)
 				localK := k
 				p.RunCli(localK, sessionChannel)
-				p.BackGroundTask(localK, sessionChannel, sessionGauge)
+				// 定时写入数据
+				go func() {
+					timeTicker := time.NewTicker(3 * time.Second)
+					for {
+						select {
+						case <-timeTicker.C:
+							p.RunCli(localK, sessionChannel)
+
+						}
+					}
+				}()
+				// 实时接收数据
+				go func() {
+					for {
+						select {
+						case cmd := <-sessionChannel:
+							p.Collect.GaugeCollector(sessionGauge, cmd.CmdRes)
+						}
+					}
+				}()
 			}
 
 		}
