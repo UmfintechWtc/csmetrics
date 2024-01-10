@@ -3,7 +3,6 @@ package handler
 import (
 	"collect-metrics/client/cli"
 	"collect-metrics/common"
-	"fmt"
 	"sync"
 	"time"
 
@@ -11,12 +10,12 @@ import (
 )
 
 var (
-	processGauge   *prometheus.GaugeVec
-	processChannel = make(chan map[string]float64, 1)
-	sessionGauge   *prometheus.GaugeVec
-	netstatGauge   *prometheus.GaugeVec
-	gaugeDoOnce    sync.Once
-	gaugeMetrics   map[string]GagueMetrics
+	processGauge  *prometheus.GaugeVec
+	sessionGauge  *prometheus.GaugeVec
+	netstatGauge  *prometheus.GaugeVec
+	gaugeDoOnce   sync.Once
+	gaugeMetrics  map[string]GagueMetrics
+	formatMetrics = formatMetricsFunc()
 )
 
 type GagueMetrics struct {
@@ -26,7 +25,7 @@ type GagueMetrics struct {
 	MetricLabel []string
 }
 
-func formatMetrics() map[string]GagueMetrics {
+func formatMetricsFunc() map[string]GagueMetrics {
 	metrics := make(map[string]GagueMetrics)
 	for k, v := range common.GaugeMetrics {
 		metric := GagueMetrics{}
@@ -47,77 +46,64 @@ func formatMetrics() map[string]GagueMetrics {
 	return metrics
 }
 
-func (p *PrometheusHandler) RunCli(cmd string) (*cli.GaugeValues, error) {
-	r, err := p.Cli.GaugeValues(cmd)
-	if err != nil {
-		return nil, err
-	}
-	return r, nil
+func (p *PrometheusHandler) RunCli(metricType string, ch chan *cli.GaugeValues) {
+	cmd := formatMetrics[metricType].MetricCmd
+	r, _ := p.Cli.GaugeValues(cmd)
+	ch <- r
 }
 
-func (p *PrometheusHandler) Gauge() {
-	// gaugeChannel := make(chan map[string]float64)
-	gaugeDoOnce.Do(func() {
-		for k, v := range formatMetrics() {
-			switch k {
-			case "process":
-				processGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
-				p.Registry.MustRegister(processGauge)
-				cmdRes, err := p.RunCli(v.MetricCmd)
-				if err != nil {
-					fmt.Println(err)
-				}
-				p.Collect.GaugeCollector(processGauge, cmdRes.CmdRes)
-			case "netstat":
-				netstatGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
-				p.Registry.MustRegister(netstatGauge)
-				cmdRes, err := p.RunCli(v.MetricCmd)
-				if err != nil {
-					fmt.Println(err)
-				}
-				p.Collect.GaugeCollector(netstatGauge, cmdRes.CmdRes)
-			case "session":
-				sessionGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
-				p.Registry.MustRegister(sessionGauge)
-				cmdRes, err := p.RunCli(v.MetricCmd)
-				if err != nil {
-					fmt.Println(err)
-				}
-				p.Collect.GaugeCollector(sessionGauge, cmdRes.CmdRes)
-			}
-		}
-	})
-
+func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec) {
+	// 定时写入数据
 	go func() {
-		timeTicket := time.NewTicker(10 * time.Second)
+		timeTicker := time.NewTicker(3 * time.Second)
 		for {
-			fmt.Println("TianCiwang -- ", time.Now())
 			select {
-			case <-timeTicket.C:
-				for k, v := range formatMetrics() {
-					switch k {
-					case "process":
-						cmdRes, err := p.RunCli(v.MetricCmd)
-						if err != nil {
-							fmt.Println(err)
-						}
-						p.Collect.GaugeCollector(processGauge, cmdRes.CmdRes)
-					case "netstat":
-						cmdRes, err := p.RunCli(v.MetricCmd)
-						if err != nil {
-							fmt.Println(err)
-						}
-						p.Collect.GaugeCollector(netstatGauge, cmdRes.CmdRes)
-					case "session":
-						cmdRes, err := p.RunCli(v.MetricCmd)
-						if err != nil {
-							fmt.Println(err)
-						}
-						p.Collect.GaugeCollector(sessionGauge, cmdRes.CmdRes)
-					}
+			case <-timeTicker.C:
+				p.RunCli(k, ch)
 
-				}
 			}
 		}
 	}()
+	// 实时接收数据
+	go func() {
+		for {
+			select {
+			case cmd := <-ch:
+				p.Collect.GaugeCollector(gauge, cmd.CmdRes)
+			}
+		}
+	}()
+}
+
+func (p *PrometheusHandler) Gauge() {
+	gaugeDoOnce.Do(func() {
+		for k, v := range formatMetrics {
+			switch k {
+			case "process":
+				processChannel := make(chan *cli.GaugeValues, 1)
+				processGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
+				p.Registry.MustRegister(processGauge)
+				// 定义一个局部变量，因为定义的 goroutine 调用变量是外部共享的
+				localK := k
+				// 程序启动时先加载一次数据
+				p.RunCli(localK, processChannel)
+				p.BackGroundTask(localK, processChannel, processGauge)
+			case "netstat":
+				netstatChannel := make(chan *cli.GaugeValues, 1)
+				netstatGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
+				p.Registry.MustRegister(netstatGauge)
+				localK := k
+				p.RunCli(localK, netstatChannel)
+				p.BackGroundTask(localK, netstatChannel, netstatGauge)
+			case "session":
+				sessionChannel := make(chan *cli.GaugeValues, 1)
+				sessionGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
+				p.Registry.MustRegister(sessionGauge)
+				localK := k
+				p.RunCli(localK, sessionChannel)
+				p.BackGroundTask(localK, sessionChannel, sessionGauge)
+			}
+
+		}
+	})
 }
