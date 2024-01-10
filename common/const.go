@@ -36,36 +36,9 @@ const RUN_WITH_DEBUG string = "debug"
 // 运行模式 Release
 const RUN_WITH_RELEASE string = "release"
 
-// netstat 获取 tcp 连接状态命令模板
-const NetstatCmd string = "netstat -an | grep tcp | grep -v grep | awk '{print $NF}' | sort | uniq -c"
-
-// netstat Metric Name
-const NetstatMetricName string = "netstat_group"
-
-// netstat Metric Help
-const NetstatMetricHelp string = "get netstat order by state"
-
-// ps aux 获取不同用户管理进程数命令模板
-const ProcessCmd string = "ps aux | grep -v COMMAND | grep -v grep | awk '{print $1}' | sort | uniq -c"
-
-// netstat Metric Name
-const ProcessMetricName string = "process_group"
-
-// netstat Metric Help
-const ProcessMetricHelp string = "get process order by user"
-
-// who 获取当前用户会话数命令模板
-const SessionCmd string = "who | awk '{print $1}' | sort | uniq -c"
-
-// netstat Metric Name
-const SessionMetricName string = "session_group"
-
-// netstat Metric Help
-const SessionMetricHelp string = "get session order by user"
-
 // Gauge Metrics 定义
 var GaugeMetrics map[string]map[string]interface{} = map[string]map[string]interface{}{
-	"nenstat": {
+	"netstat": {
 		"name":   "netstat_group",
 		"help":   "get netstat order by state",
 		"labels": []string{"state"},

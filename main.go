@@ -35,15 +35,16 @@ func SetRouter(
 		)
 	}
 	r := gin.New()
-	// 绑定 prom.AllRegistry，包含4种类型数据
+	// r.Use(gin.WrapH(promhttp.Handler()))
+	// r.GET("/metrics", prom.Gauge)
 	r.GET("/metrics", func(c *gin.Context) {
-		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
+		handler := promhttp.HandlerFor(prom.Registry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
 	// 绑定 prom.AllRegistry，仅包含Counter类型
 	r.GET("/metrics/*path", func(c *gin.Context) {
-		handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
-		handler.ServeHTTP(c.Writer, c.Request)
+		// handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
+		// handler.ServeHTTP(c.Writer, c.Request)
 	})
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -75,9 +76,10 @@ func main() {
 		prometheusMetricsType,
 		collectorValues,
 		shellCli,
+		config,
 	)
-	// 初始化
-	// newPrometheusHandler.InitializeCmd(config.Metrics.Gauge)
+	// 初始化Gauge Metric
+	newPrometheusHandler.Gauge()
 	// 设置 Gin 路由
 	r := SetRouter(
 		newPrometheusHandler,

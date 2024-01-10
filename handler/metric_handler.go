@@ -5,6 +5,7 @@ import (
 	p "collect-metrics/client/prometheus"
 	"collect-metrics/collector"
 	"collect-metrics/common"
+	config "collect-metrics/module"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -16,15 +17,16 @@ var (
 )
 
 type PrometheusHandler struct {
-	PromService p.PrometheusMetricsType
-	PromOpts    promhttp.HandlerOpts
+	MetricsType p.PrometheusMetricsType
 	Collect     collector.CollectorValues
+	Config      *config.CollectMetricsConfiguration
 	Cli         cli.ShellCli
-	AllRegistry *prometheus.Registry
+	PromOpts    promhttp.HandlerOpts
+	Registry    *prometheus.Registry
 }
 
 // 初始化注册表
-func (p *PrometheusHandler) Registry(registry *prometheus.Registry, mode string) *prometheus.Registry {
+func (p *PrometheusHandler) NewRegistry(registry *prometheus.Registry, mode string) *prometheus.Registry {
 	internalMetrics.Do(func() {
 		if mode == common.RUN_WITH_DEBUG {
 			// 当为debug 模式时，开启内置Go 运行时相关指标
@@ -43,11 +45,12 @@ func (p *PrometheusHandler) Registry(registry *prometheus.Registry, mode string)
 }
 
 // NewPrometheusHandler 用于构造 PrometheusHandler 实例
-func NewPrometheusHandler(p p.PrometheusMetricsType, collector collector.CollectorValues, cli cli.ShellCli) *PrometheusHandler {
+func NewPrometheusHandler(p p.PrometheusMetricsType, collector collector.CollectorValues, cli cli.ShellCli, config *config.CollectMetricsConfiguration) *PrometheusHandler {
 	return &PrometheusHandler{
-		PromService: p,
+		MetricsType: p,
 		Collect:     collector,
+		Config:      config,
 		Cli:         cli,
-		AllRegistry: prometheus.NewRegistry(),
+		Registry:    prometheus.NewRegistry(),
 	}
 }

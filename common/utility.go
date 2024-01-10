@@ -99,3 +99,8 @@ func RandomInt() float64 {
 	randomNumber := rand.Intn(100) + 1
 	return float64(randomNumber)
 }
+
+func ChangeInterfaceToSlice(data interface{}) []string {
+	sl := data.([]string)
+	return sl
+}
