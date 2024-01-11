@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2
+	github.com/fatih/color v1.14.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
@@ -31,6 +32,7 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

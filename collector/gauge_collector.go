@@ -21,7 +21,7 @@ func extractLabels(cmdRes map[string]float64) []string {
 }
 
 // 实现 GaugeCollector 接口方法
-func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdRes map[string]float64, metricType string) error {
+func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdRes map[string]float64, metricType string) {
 	for k, v := range cmdRes {
 		gaugeVec.WithLabelValues(k).Set(v)
 	}
@@ -32,5 +32,4 @@ func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdR
 		}
 	}
 	aleradyLabelsValue[metricType] = extractLabels(cmdRes)
-	return nil
 }

@@ -7,7 +7,7 @@ import (
 // 初始化 CollectorValues 接口
 type CollectorValues interface {
 	// GaugeCollector 调用Cli接口，设置Label 及 Metric的Value，并将Metric的值上报Prometheus
-	GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdRes map[string]float64, metricType string) error
+	GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdRes map[string]float64, metricType string)
 	// CounterCollector Metric的Value自增 +1，并将Metric的值上报Prometheus
 	CounterCollector(counterVec *prometheus.CounterVec, labelsValues string)
 	// HistogramCollector 设置Metric的Bucket且Value自增+1，并将Metric的值上报Prometheus

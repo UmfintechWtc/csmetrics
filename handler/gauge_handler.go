@@ -3,6 +3,7 @@ package handler
 import (
 	"collect-metrics/client/cli"
 	"collect-metrics/common"
+	"collect-metrics/log"
 	"fmt"
 	"sync"
 	"time"
@@ -48,23 +49,28 @@ func formatMetricsFunc() map[string]GagueMetrics {
 }
 
 // 执行Shell Cli，获取结果
-func (p *PrometheusHandler) RunCli(metricType string, ch chan *cli.GaugeValues) {
+func (p *PrometheusHandler) RunCli(metricType string, ch chan *cli.GaugeValues) error {
 	cmd := formatMetrics[metricType].MetricCmd
-	r, _ := p.Cli.GaugeValues(cmd)
-	fmt.Println(metricType, " -- ", r.CmdRes, "--", time.Now())
+	r, err := p.Cli.GaugeValues(cmd)
+	if err != nil {
+		return err
+	}
 	ch <- r
+	return nil
 }
 
 // 定时处理数据
-func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec, cycle time.Duration) {
+func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec, cycle time.Duration) error {
 	// 定时写入数据
 	go func() {
 		timeTicker := time.NewTicker(cycle)
 		for {
 			select {
 			case <-timeTicker.C:
-				p.RunCli(k, ch)
-
+				if err := p.RunCli(k, ch); err == nil {
+					fmt.Println(log.Red("error running"))
+					return
+				}
 			}
 		}
 	}()
@@ -77,6 +83,7 @@ func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, g
 			}
 		}
 	}()
+	return nil
 }
 
 func (p *PrometheusHandler) RunGlobalCycle() bool {
