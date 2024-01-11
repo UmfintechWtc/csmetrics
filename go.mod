@@ -6,6 +6,7 @@ require (
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2
 	github.com/fatih/color v1.14.1
 	github.com/gin-gonic/gin v1.9.1
+	github.com/google/uuid v1.1.2
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.9.3

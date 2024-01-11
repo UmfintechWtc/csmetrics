@@ -3,8 +3,6 @@ package handler
 import (
 	"collect-metrics/client/cli"
 	"collect-metrics/common"
-	"collect-metrics/log"
-	"fmt"
 	"sync"
 	"time"
 
@@ -68,7 +66,6 @@ func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, g
 			select {
 			case <-timeTicker.C:
 				if err := p.RunCli(k, ch); err == nil {
-					fmt.Println(log.Red("error running"))
 					return
 				}
 			}
