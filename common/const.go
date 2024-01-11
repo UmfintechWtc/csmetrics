@@ -1,5 +1,7 @@
 package common
 
+import "time"
+
 // 默认加载配置文件路径
 const COLLECT_METRICS_CONFIG_PATH string = "./deploy/xconf/collect-metrics.yml"
 
@@ -35,6 +37,9 @@ const RUN_WITH_DEBUG string = "debug"
 
 // 运行模式 Release
 const RUN_WITH_RELEASE string = "release"
+
+// 默认运行周期
+var RUN_COMMON_CYCLE time.Duration = 60 * time.Second
 
 // Gauge Metrics 定义
 var GaugeMetrics map[string]map[string]interface{} = map[string]map[string]interface{}{

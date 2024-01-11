@@ -47,17 +47,19 @@ func formatMetricsFunc() map[string]GagueMetrics {
 	return metrics
 }
 
+// 执行Shell Cli，获取结果
 func (p *PrometheusHandler) RunCli(metricType string, ch chan *cli.GaugeValues) {
 	cmd := formatMetrics[metricType].MetricCmd
 	r, _ := p.Cli.GaugeValues(cmd)
-	fmt.Println(metricType, " -- ", cmd, " -- ", r.CmdRes)
+	fmt.Println(metricType, " -- ", r.CmdRes, "--", time.Now())
 	ch <- r
 }
 
-func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec) {
+// 定时处理数据
+func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec, cycle time.Duration) {
 	// 定时写入数据
 	go func() {
-		timeTicker := time.NewTicker(3 * time.Second)
+		timeTicker := time.NewTicker(cycle)
 		for {
 			select {
 			case <-timeTicker.C:
@@ -71,10 +73,17 @@ func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, g
 		for {
 			select {
 			case cmd := <-ch:
-				p.Collect.GaugeCollector(gauge, cmd.CmdRes)
+				p.Collect.GaugeCollector(gauge, cmd.CmdRes, k)
 			}
 		}
 	}()
+}
+
+func (p *PrometheusHandler) RunGlobalCycle() bool {
+	if p.Config.Server.GlobalPeriodSeconds != nil {
+		return true
+	}
+	return false
 }
 
 func (p *PrometheusHandler) Gauge() {
@@ -82,6 +91,17 @@ func (p *PrometheusHandler) Gauge() {
 		for k, v := range formatMetrics {
 			switch k {
 			case "process":
+				// 执行周期策略
+				cycle := p.Config.Metrics.Gauge.PS.PeriodSeconds
+				if cycle != nil {
+					cycle = p.Config.Metrics.Gauge.PS.PeriodSeconds
+				} else {
+					if p.RunGlobalCycle() {
+						cycle = p.Config.Server.GlobalPeriodSeconds
+					} else {
+						cycle = &common.RUN_COMMON_CYCLE
+					}
+				}
 				processChannel := make(chan *cli.GaugeValues, 1)
 				processGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(processGauge)
@@ -89,78 +109,41 @@ func (p *PrometheusHandler) Gauge() {
 				localK := k
 				// 程序启动时先加载一次数据
 				p.RunCli(localK, processChannel)
-				// 定时写入数据
-				go func() {
-					timeTicker := time.NewTicker(3 * time.Second)
-					for {
-						select {
-						case <-timeTicker.C:
-							p.RunCli(localK, processChannel)
-
-						}
-					}
-				}()
-				// 实时接收数据
-				go func() {
-					for {
-						select {
-						case cmd := <-processChannel:
-							p.Collect.GaugeCollector(processGauge, cmd.CmdRes)
-						}
-					}
-				}()
+				p.BackGroundTask(k, processChannel, processGauge, *cycle)
 			case "netstat":
+				cycle := p.Config.Metrics.Gauge.TCP.PeriodSeconds
+				if cycle != nil {
+					cycle = p.Config.Metrics.Gauge.TCP.PeriodSeconds
+				} else {
+					if p.RunGlobalCycle() {
+						cycle = p.Config.Server.GlobalPeriodSeconds
+					} else {
+						cycle = &common.RUN_COMMON_CYCLE
+					}
+				}
 				netstatChannel := make(chan *cli.GaugeValues, 1)
 				netstatGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(netstatGauge)
 				localK := k
 				p.RunCli(localK, netstatChannel)
-				// 定时写入数据
-				go func() {
-					timeTicker := time.NewTicker(3 * time.Second)
-					for {
-						select {
-						case <-timeTicker.C:
-							p.RunCli(localK, netstatChannel)
-
-						}
-					}
-				}()
-				// 实时接收数据
-				go func() {
-					for {
-						select {
-						case cmd := <-netstatChannel:
-							p.Collect.GaugeCollector(netstatGauge, cmd.CmdRes)
-						}
-					}
-				}()
+				p.BackGroundTask(k, netstatChannel, netstatGauge, *cycle)
 			case "session":
+				cycle := p.Config.Metrics.Gauge.Session.PeriodSeconds
+				if cycle != nil {
+					cycle = p.Config.Metrics.Gauge.Session.PeriodSeconds
+				} else {
+					if p.RunGlobalCycle() {
+						cycle = p.Config.Server.GlobalPeriodSeconds
+					} else {
+						cycle = &common.RUN_COMMON_CYCLE
+					}
+				}
 				sessionChannel := make(chan *cli.GaugeValues, 1)
 				sessionGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(sessionGauge)
 				localK := k
 				p.RunCli(localK, sessionChannel)
-				// 定时写入数据
-				go func() {
-					timeTicker := time.NewTicker(3 * time.Second)
-					for {
-						select {
-						case <-timeTicker.C:
-							p.RunCli(localK, sessionChannel)
-
-						}
-					}
-				}()
-				// 实时接收数据
-				go func() {
-					for {
-						select {
-						case cmd := <-sessionChannel:
-							p.Collect.GaugeCollector(sessionGauge, cmd.CmdRes)
-						}
-					}
-				}()
+				p.BackGroundTask(k, sessionChannel, sessionGauge, *cycle)
 			}
 
 		}

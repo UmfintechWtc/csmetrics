@@ -38,13 +38,17 @@ func SetRouter(
 	// r.Use(gin.WrapH(promhttp.Handler()))
 	// r.GET("/metrics", prom.Gauge)
 	r.GET("/metrics", func(c *gin.Context) {
+		prom.Counter(c)
+		prom.Histogram(c, config.Histogram)
+		prom.Summary(c, config.Summary)
 		handler := promhttp.HandlerFor(prom.Registry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
 	// 绑定 prom.AllRegistry，仅包含Counter类型
 	r.GET("/metrics/*path", func(c *gin.Context) {
-		// handler := promhttp.HandlerFor(prom.AllRegistry, prom.PromOpts)
-		// handler.ServeHTTP(c.Writer, c.Request)
+		prom.Counter(c)
+		handler := promhttp.HandlerFor(prom.Registry, prom.PromOpts)
+		handler.ServeHTTP(c.Writer, c.Request)
 	})
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{

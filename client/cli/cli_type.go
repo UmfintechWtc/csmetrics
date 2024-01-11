@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	gauge     = &GaugeValues{}
-	cmdOutput []byte
+	gauge = &GaugeValues{}
 )
 
 type GaugeValues struct {
@@ -19,6 +18,7 @@ type GaugeValues struct {
 
 func executeCommandWithFloat64(cmd string) (map[string]float64, error) {
 	resultStatus := make(map[string]float64)
+	var cmdOutput []byte
 	subCommands := strings.Split(cmd, " | ")
 	for _, subCmd := range subCommands {
 		cmd := exec.Command("bash", "-c", subCmd)

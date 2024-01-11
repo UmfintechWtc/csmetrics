@@ -2,7 +2,7 @@
 server:
   listen: 0.0.0.0
   port: 9099
-  periodSeconds: 60s
+  periodSeconds: 30s
   # debug | release, default: debug
   mode: release
 
@@ -11,11 +11,11 @@ metrics:
   gauge:
     netstat:
       # 扫描频率
-      periodSeconds: 60s
+      periodSeconds: 15s
     process:
-      periodSeconds: 30s
+      periodSeconds: 15s
     session:
-      periodSeconds: 30s
+      periodSeconds: 15s
   histogram:
     delay:
       buckets:
