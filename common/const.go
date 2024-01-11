@@ -84,8 +84,8 @@ var HistogramMetrics map[string]map[string]interface{} = map[string]map[string]i
 // Summary Metrics 定义
 var Summary map[string]map[string]interface{} = map[string]map[string]interface{}{
 	"delay": {
-		"name":   "requests_delay_with_histogram",
-		"help":   "Total number of HTTP requests delay with histogram",
+		"name":   "requests_delay_with_summary",
+		"help":   "Total number of HTTP requests delay with summary",
 		"labels": []string{"code"},
 	},
 }
