@@ -11,43 +11,43 @@ type LogrusLogger struct {
 }
 
 func (l *LogrusLogger) Debug(a ...interface{}) {
-	l.Debug(ColorFuncMap["Debug"](a...))
+	l.Logger.Debug(ColorFuncMap["Debug"](a...))
 }
 
 func (l *LogrusLogger) Debugf(format string, a ...interface{}) {
-	l.Debugf(ColorFuncMapWithFormat["Debugf"](format, a...))
+	l.Logger.Debugf(ColorFuncMapWithFormat["Debugf"](format, a...))
 }
 
 func (l *LogrusLogger) Info(a ...interface{}) {
-	l.Info(ColorFuncMap["Info"](a...))
+	l.Logger.Info(ColorFuncMap["Info"](a...))
 }
 
 func (l *LogrusLogger) Infof(format string, a ...interface{}) {
-	l.Infof(ColorFuncMapWithFormat["Infof"](format, a...))
+	l.Logger.Infof(ColorFuncMapWithFormat["Infof"](format, a...))
 }
 
 func (l *LogrusLogger) Warn(a ...interface{}) {
-	l.Warn(ColorFuncMap["Warn"](a...))
+	l.Logger.Warn(ColorFuncMap["Warn"](a...))
 }
 
 func (l *LogrusLogger) Warnf(format string, a ...interface{}) {
-	l.Warnf(ColorFuncMapWithFormat["Warnf"](format, a...))
+	l.Logger.Warnf(ColorFuncMapWithFormat["Warnf"](format, a...))
 }
 
 func (l *LogrusLogger) Error(a ...interface{}) {
-	l.Error(ColorFuncMap["Error"](a...))
+	l.Logger.Error(ColorFuncMap["Error"](a...))
 }
 
 func (l *LogrusLogger) Errorf(format string, a ...interface{}) {
-	l.Errorf(ColorFuncMapWithFormat["Errorf"](format, a...))
+	l.Logger.Errorf(ColorFuncMapWithFormat["Errorf"](format, a...))
 }
 
 func (l *LogrusLogger) Fatal(a ...interface{}) {
-	l.Fatal(ColorFuncMap["Fatal"](a...))
+	l.Logger.Fatal(ColorFuncMap["Fatal"](a...))
 }
 
 func (l *LogrusLogger) Fatalf(format string, a ...interface{}) {
-	l.Fatalf(ColorFuncMapWithFormat["Fatalf"](format, a...))
+	l.Logger.Fatalf(ColorFuncMapWithFormat["Fatalf"](format, a...))
 }
 
 func NewLogrusLogger() Logger {
