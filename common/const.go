@@ -2,6 +2,8 @@ package common
 
 import "time"
 
+const APP_NAME string = "collect-metrics"
+
 // 默认加载配置文件路径
 const COLLECT_METRICS_CONFIG_PATH string = "./deploy/xconf/collect-metrics.yml"
 

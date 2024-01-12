@@ -58,17 +58,21 @@ func (p *PrometheusHandler) RunCli(metricType string, ch chan *cli.GaugeValues) 
 	return nil
 }
 
-// 定时处理数据
+// 定时收集数据
 func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec, cycle time.Duration) {
+	var count int = 1
 	// 定时写入数据
 	go func() {
 		timeTicker := time.NewTicker(cycle)
 		for {
 			select {
 			case <-timeTicker.C:
+				logx.Warnf("BackGroundTask called with %s, It's been collected %d times.", k, count)
 				if err := p.RunCli(k, ch); err != nil {
-					logx.Errorf("Error running command %s", err)
+					logx.Error("Error running command %s", err)
+					return
 				}
+				count++
 			}
 		}
 	}()
@@ -91,6 +95,7 @@ func (p *PrometheusHandler) RunGlobalCycle() bool {
 }
 
 func (p *PrometheusHandler) Gauge() {
+	logx.Infof("Gauge Metrics")
 	gaugeDoOnce.Do(func() {
 		for k, v := range formatMetrics {
 			switch k {
@@ -106,6 +111,7 @@ func (p *PrometheusHandler) Gauge() {
 						cycle = &common.RUN_COMMON_CYCLE
 					}
 				}
+				logx.Infof("Start Collect Gauge Metrics with Process, please wait %s.", cycle)
 				processChannel := make(chan *cli.GaugeValues, 1)
 				processGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(processGauge)
@@ -128,11 +134,15 @@ func (p *PrometheusHandler) Gauge() {
 						cycle = &common.RUN_COMMON_CYCLE
 					}
 				}
+				logx.Infof("Start Collect Gauge Metrics with Netstat, please wait %s.", cycle)
 				netstatChannel := make(chan *cli.GaugeValues, 1)
 				netstatGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(netstatGauge)
 				localK := k
-				p.RunCli(localK, netstatChannel)
+				err := p.RunCli(localK, netstatChannel)
+				if err != nil {
+					logx.Errorf("Error running command %s", err)
+				}
 				p.BackGroundTask(k, netstatChannel, netstatGauge, *cycle)
 			case "session":
 				cycle := p.Config.Metrics.Gauge.Session.PeriodSeconds
@@ -145,11 +155,15 @@ func (p *PrometheusHandler) Gauge() {
 						cycle = &common.RUN_COMMON_CYCLE
 					}
 				}
+				logx.Infof("Start Collect Gauge Metrics with Session, please wait %s.", cycle)
 				sessionChannel := make(chan *cli.GaugeValues, 1)
 				sessionGauge = p.MetricsType.CreateGauge(v.MetricName, v.MetricHelp, v.MetricLabel)
 				p.Registry.MustRegister(sessionGauge)
 				localK := k
-				p.RunCli(localK, sessionChannel)
+				err := p.RunCli(localK, sessionChannel)
+				if err != nil {
+					logx.Errorf("Error running command %s", err)
+				}
 				p.BackGroundTask(k, sessionChannel, sessionGauge, *cycle)
 			}
 

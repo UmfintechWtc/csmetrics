@@ -106,7 +106,7 @@ func ChangeInterfaceToSlice(data interface{}) []string {
 	return sl
 }
 
-func GetCallerInfo() (string, int) {
+func GetCallerInfo(skip int) (string, int) {
 	_, file, line, _ := runtime.Caller(10)
 	return file, line
 }

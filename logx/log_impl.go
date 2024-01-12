@@ -1,6 +1,7 @@
 package logx
 
 import (
+	"collect-metrics/common"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -77,6 +78,7 @@ type LogrusConfig struct {
 	LogLevel         string                  `mapstructure:"log_level" json:"log_level" yaml:"log_level" validate:"omitempty"`
 	ReportCaller     bool                    `mapstructure:"report_caller" json:"report_caller" yaml:"report_caller" validate:"omitempty"`
 	Stdout           bool                    `mapstructure:"stdout" json:"stdout" yaml:"stdout" validate:"omitempty"`
+	EnabledWrite     bool                    `mapstructure:"enabled_write" json:"enabled_write" yaml:"enabled_write" validate:"omitempty"`
 }
 
 // GetDefaultLogrusConfig 获取默认的 LogrusConfig 实例
@@ -85,6 +87,18 @@ func GetDefaultLogrusConfig() *LogrusConfig {
 		ReportCaller: true,
 		Stdout:       true,
 		LogLevel:     "debug",
+		EnabledWrite: false,
+	}
+}
+
+// GetDeefaultLumberjackConfig
+func GetDeefaultLumberjackConfig() *LumberjackLoggerConfig {
+	return &LumberjackLoggerConfig{
+		Filename:   "./logs/" + common.APP_NAME,
+		MaxSize:    100,
+		MaxAge:     7,
+		MaxBackups: 5,
+		Compress:   true,
 	}
 }
 
@@ -92,6 +106,7 @@ func NewLogrusLogger(config *LogrusConfig) Logger {
 	if config == nil {
 		config = GetDefaultLogrusConfig()
 	}
+
 	// 初始化logrus对象
 	ins := logrus.New()
 	if config.Stdout {
@@ -102,7 +117,10 @@ func NewLogrusLogger(config *LogrusConfig) Logger {
 		ins.SetReportCaller(config.ReportCaller)
 	}
 	// 日志落地文件
-	if config.LumberjackLogger != nil {
+	if config.EnabledWrite {
+		if config.LumberjackLogger == nil {
+			config.LumberjackLogger = GetDeefaultLumberjackConfig()
+		}
 		ins.SetOutput(
 			&lumberjack.Logger{
 				Filename:   config.LumberjackLogger.Filename,
@@ -125,12 +143,3 @@ func NewLogrusLogger(config *LogrusConfig) Logger {
 		Logger: ins,
 	}
 }
-
-// var GlobalLoggerOnce sync.Once
-
-// func InitializeLog() {
-// 	GlobalLoggerOnce.Do(func() {
-// 		// 初始化全局 Logger
-// 		globalLogger = NewLogrusLogger(GetDefaultLogrusConfig())
-// 	})
-// }

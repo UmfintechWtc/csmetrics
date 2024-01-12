@@ -8,10 +8,15 @@ import (
 	"collect-metrics/handler"
 	"collect-metrics/logx"
 	config "collect-metrics/module"
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -36,9 +41,10 @@ func SetRouter(
 	// r.Use(gin.WrapH(promhttp.Handler()))
 	// r.GET("/metrics", prom.Gauge)
 	r.GET("/metrics", func(c *gin.Context) {
-		// prom.Counter(c)
-		// prom.Histogram(c, config.Histogram)
-		// prom.Summary(c, config.Summary)
+		logx.Infof("request url %s, status: %d, client: %s", c.Request.URL.Path, c.Writer.Status(), c.ClientIP())
+		prom.Counter(c)
+		prom.Histogram(c, config.Histogram)
+		prom.Summary(c, config.Summary)
 		handler := promhttp.HandlerFor(prom.Registry, prom.PromOpts)
 		handler.ServeHTTP(c.Writer, c.Request)
 	})
@@ -82,8 +88,6 @@ func main() {
 		shellCli,
 		config,
 	)
-	// 初始化Gauge Metric
-	newPrometheusHandler.Gauge()
 	// 设置 Gin 路由
 	r := SetRouter(
 		newPrometheusHandler,
@@ -95,8 +99,34 @@ func main() {
 		Addr:    fmt.Sprintf(":%d", config.Server.Port),
 		Handler: r,
 	}
-	err = svr.ListenAndServe()
-	if err != nil {
-		logx.Fatalf("Starting server failed with %s", err)
+	go func() {
+		if err = svr.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logx.Fatalf("Starting server failed with %s", err)
+		}
+	}()
+	logx.Infof("Server started successfully with %s:%d/%s", config.Server.Listen, config.Server.Port, common.URL_PREFIX["all"])
+	// 初始化Gauge
+	newPrometheusHandler.Gauge()
+
+	// 如果收到指定的信号，那么关闭 HTTP 服务
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	logx.Info("Shutdown server ...")
+	timeout := time.Duration(config.Server.ShutdownTimeoutMs) * time.Millisecond
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	if err := svr.Shutdown(ctx); err != nil {
+		logx.Fatalf(
+			fmt.Sprintf("Shutdown server failure with %s", err),
+		)
 	}
+	// 等待服务关闭
+	select {
+	case <-ctx.Done():
+		logx.Infof(
+			fmt.Sprintf("Timeout of %dms reached", config.Server.ShutdownTimeoutMs),
+		)
+	}
+	logx.Infof("Server exited")
 }

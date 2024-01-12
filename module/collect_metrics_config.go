@@ -21,6 +21,7 @@ type Server struct {
 	Mode   string `mapstructure:"mode" binding:"omitempty"`
 	// time.Duration 的零值是 0s, *time.Duration 的零值是 nil
 	GlobalPeriodSeconds *time.Duration     `mapstructure:"periodSeconds" binding:"omitempty"`
+	ShutdownTimeoutMs   int64              `mapstructure:"shutdown_timeout_ms" json:"shutdown_timeout_ms" yaml:"shutdown_timeout_ms" binding:"required,gt=0"`
 	LogrusConfig        *logx.LogrusConfig `mapstructure:"logrus_config" json:"logrus_config" yaml:"logrus_config" binding:"omitempty"`
 }
 type CateGoryMetrics struct {
