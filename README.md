@@ -1,13 +1,13 @@
 # collect-metrics
 
-#### Description
+## Description
 **1. 统计各用户Session会话数**  
 **2. 统计各用户启动的进程数**  
 **3. 统计各TCP连接状态**
+**4. 统计URL访问次数**
 
-
-#### Prometheus Metrics
-##### Gauge Metrics Name
+## Prometheus Metrics
+### Gauge Metrics Name
 **session_group**  
 example: 
 ```shell
@@ -37,8 +37,8 @@ netstat_group{state="ESTABLISHED"} 22
 netstat_group{state="LISTEN"} 8
 netstat_group{state="TIME_WAIT"} 1
 ```
-##### Counter Metrics Name
-**requests_url_total**
+### Counter Metrics Name 
+**requests_url_total**  
 example:
 ```shell
 # HELP requests_url_total get requests order by url
@@ -48,8 +48,8 @@ requests_url_total{url="/metrics/"} 1
 requests_url_total{url="/metrics/12323"} 4
 requests_url_total{url="/metrics/asdasscxcvcxv"} 1
 ```
-##### Histogram Metrics Name
-**requests_delay_with_histogram_bucket**
+### Histogram Metrics Name 
+**requests_delay_with_histogram_bucket [Just Demo]**  
 ```shell
 # HELP requests_delay_with_histogram Total number of HTTP requests delay with histogram
 # TYPE requests_delay_with_histogram histogram
@@ -62,7 +62,8 @@ requests_delay_with_histogram_bucket{code="200",le="+Inf"} 11
 requests_delay_with_histogram_sum{code="200"} 582
 requests_delay_with_histogram_count{code="200"} 11
 ```
-##### Summary Metrics Name
+### Summary Metrics Name
+**requests_delay_with_summary [Just Demo]**  
 ```shell
 # HELP requests_delay_with_summary Total number of HTTP requests delay with summary
 # TYPE requests_delay_with_summary summary
@@ -74,83 +75,69 @@ requests_delay_with_summary{code="200",quantile="0.5"} 24
 requests_delay_with_summary_sum{code="200"} 470
 requests_delay_with_summary_count{code="200"} 11
 ```
-#### Configuration
+
+## Configuration
+### Path
+**deploy/xconf/collect-metrics.yml**
+### log config
 ```yaml
----
 server:
-  listen: 0.0.0.0
-  port: 9099
-  periodSeconds: 30s
-  shutdown_timeout_ms: 1000
-  # debug | release, default: debug
-  mode: release
-      
-
-metrics:
-  # gauage类型指标
-  gauge:
-    netstat:
-      # 扫描频率
-      periodSeconds: 15s
-    process:
-      periodSeconds: 15s
-    session:
-      periodSeconds: 15s
-  histogram:
-    delay:
-      buckets:
-        # 支持切片和线性，若都开启线性优先级高
-        linear:
-          enabled: True
-          range:
-            # 边界值: [10 20 30 40 50]
-            start: 10
-            width: 10
-            count: 5
-        slice:
-          enabled: True
-          range:
-            # 边界值: [10 20 30 40 50]
-            - 10
-            - 20
-            - 30
-            - 40
-            - 50
-  summary:
-    delay:
-      median: 
-        # 中位数: 度量指标
-        10: 10  # example: 采样10%样本，请求小于10ms
-        20: 20  # example: 采样20%样本，请求小于20ms
-        30: 30  # example: 采样30%样本，请求小于30ms
-        40: 40  # example: 采样40%样本，请求小于40ms
-        50: 50  # example: 采样50%样本，请求小于50ms
+  logrus_config:
+    log_level: debug    # 日志级别，支持 debug | info | warning | error | fatal | panic , 默认: debug
+    report_caller: true # 回调记录，支持 true | false , 默认: true
+    stdout: true        # 日志控制台标准输出，支持 true | false , 默认: true
+    lumberjack_logger:  # 当 stdout 为 false 时配置生效。日志落地文件
+      filename: xxx.log # 日志路径，default: ./logs/collect-metrics.log
+      max_size: 1       # 日志大小，default: 100MB
+      max_backups: 1    # 日志备份个数，default: 5
+      max_age: 1        # 历史日志保留时长(days)，default: 7
+      compress: true    # 是否压缩，支持 true | false , default: true
 ```
-#### Installation
+## Development building
+### OS Platform
+```shell
+NAME="CentOS Linux"
+VERSION="7 (Core)"
+ID="centos"
+ID_LIKE="rhel fedora"
+VERSION_ID="7"
+PRETTY_NAME="CentOS Linux 7 (Core)"
+ANSI_COLOR="0;31"
+CPE_NAME="cpe:/o:centos:centos:7"
+HOME_URL="https://www.centos.org/"
+BUG_REPORT_URL="https://bugs.centos.org/"
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+CENTOS_MANTISBT_PROJECT="CentOS-7"
+CENTOS_MANTISBT_PROJECT_VERSION="7"
+REDHAT_SUPPORT_PRODUCT="centos"
+REDHAT_SUPPORT_PRODUCT_VERSION="7"
+```
 
-#### Instructions
+### Kernel 
+```shell
+Linux k8s-master-1 3.10.0-1160.el7.x86_64 #1 SMP Mon Oct 19 16:18:59 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+```
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+### [Go Version](https://go.dev/dl/)
+```shell
+go version go1.20 linux/amd64
+```
+## Installation and Usage
 
-#### Contribution
+### Build
+```shell
+go build
+```
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+### Help
+```shell
+[root@k8s-master-1:collect-metrics-with-go_130]# ./collect-metrics --help
+Usage of ./collect-metrics:
+  -config string
+    	配置文件 (default "./deploy/xconf/collect-metrics.yml")
+```
 
-
-#### Gitee Feature
-
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+### Running
+```shell
+./collect-metrics -config /path/to/config.yml
+```
