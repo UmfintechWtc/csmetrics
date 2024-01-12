@@ -6,7 +6,6 @@ server:
   shutdown_timeout_ms: 1000
   # debug | release, default: debug
   mode: release
-      
 
 metrics:
   # gauage类型指标

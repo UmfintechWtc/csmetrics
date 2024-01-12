@@ -66,8 +66,14 @@ func SetRouter(
 func main() {
 	// 命令行参数
 	var configFilePath string
+	var versionFlag bool
 	flag.StringVar(&configFilePath, "config", common.COLLECT_METRICS_CONFIG_PATH, "配置文件")
+	flag.BoolVar(&versionFlag, "version", false, "版本信息")
 	flag.Parse()
+	if versionFlag {
+		fmt.Println(common.APP_VERSION)
+		return
+	}
 	// 初始化配置
 	config, err := config.LoadInternalConfig(configFilePath)
 	if err != nil {

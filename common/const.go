@@ -4,6 +4,9 @@ import "time"
 
 const APP_NAME string = "collect-metrics"
 
+// Version
+const APP_VERSION string = "0.0.1"
+
 // 默认加载配置文件路径
 const COLLECT_METRICS_CONFIG_PATH string = "./deploy/xconf/collect-metrics.yml"
 

@@ -132,9 +132,11 @@ go build
 ### Help
 ```shell
 [root@k8s-master-1:collect-metrics-with-go_130]# ./collect-metrics --help
-Usage of ./collect-metrics:
+Usage of /tmp/go-build983345345/b001/exe/main:
   -config string
     	配置文件 (default "./deploy/xconf/collect-metrics.yml")
+  -version
+    	版本信息
 ```
 
 ### Running
