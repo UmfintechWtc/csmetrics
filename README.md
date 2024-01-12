@@ -3,7 +3,7 @@
 ## Description
 **1. 统计各用户Session会话数**  
 **2. 统计各用户启动的进程数**  
-**3. 统计各TCP连接状态**
+**3. 统计各TCP连接状态**  
 **4. 统计URL访问次数**
 
 ## Prometheus Metrics
@@ -140,4 +140,9 @@ Usage of ./collect-metrics:
 ### Running
 ```shell
 ./collect-metrics -config /path/to/config.yml
+```
+
+### Request
+```shell
+http://localhost:9099/metrics
 ```
