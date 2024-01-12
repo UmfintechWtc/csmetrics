@@ -2,6 +2,7 @@ package config
 
 import (
 	"collect-metrics/common"
+	"collect-metrics/logx"
 	"errors"
 	"fmt"
 	"sync"
@@ -19,7 +20,8 @@ type Server struct {
 	Port   int    `yaml:"port" json:"port" binding:"required"`
 	Mode   string `mapstructure:"mode" binding:"omitempty"`
 	// time.Duration 的零值是 0s, *time.Duration 的零值是 nil
-	GlobalPeriodSeconds *time.Duration `mapstructure:"periodSeconds" binding:"omitempty"`
+	GlobalPeriodSeconds *time.Duration     `mapstructure:"periodSeconds" binding:"omitempty"`
+	LogrusConfig        *logx.LogrusConfig `mapstructure:"logrus_config" json:"logrus_config" yaml:"logrus_config" binding:"omitempty"`
 }
 type CateGoryMetrics struct {
 	Gauge Gauge `mapstructure:"gauge" binding:"required"`

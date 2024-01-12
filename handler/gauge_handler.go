@@ -3,6 +3,7 @@ package handler
 import (
 	"collect-metrics/client/cli"
 	"collect-metrics/common"
+	"collect-metrics/logx"
 	"sync"
 	"time"
 
@@ -58,15 +59,15 @@ func (p *PrometheusHandler) RunCli(metricType string, ch chan *cli.GaugeValues) 
 }
 
 // 定时处理数据
-func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec, cycle time.Duration) error {
+func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, gauge *prometheus.GaugeVec, cycle time.Duration) {
 	// 定时写入数据
 	go func() {
 		timeTicker := time.NewTicker(cycle)
 		for {
 			select {
 			case <-timeTicker.C:
-				if err := p.RunCli(k, ch); err == nil {
-					return
+				if err := p.RunCli(k, ch); err != nil {
+					logx.Errorf("Error running command %s", err)
 				}
 			}
 		}
@@ -80,7 +81,6 @@ func (p *PrometheusHandler) BackGroundTask(k string, ch chan *cli.GaugeValues, g
 			}
 		}
 	}()
-	return nil
 }
 
 func (p *PrometheusHandler) RunGlobalCycle() bool {
@@ -112,7 +112,10 @@ func (p *PrometheusHandler) Gauge() {
 				// 定义一个局部变量，因为定义的 goroutine 调用变量是外部共享的
 				localK := k
 				// 程序启动时先加载一次数据
-				p.RunCli(localK, processChannel)
+				err := p.RunCli(localK, processChannel)
+				if err != nil {
+					logx.Errorf("Error running command %s", err)
+				}
 				p.BackGroundTask(k, processChannel, processGauge, *cycle)
 			case "netstat":
 				cycle := p.Config.Metrics.Gauge.TCP.PeriodSeconds
