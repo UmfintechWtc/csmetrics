@@ -8,7 +8,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"runtime"
 	"time"
 )
 
@@ -104,9 +103,4 @@ func RandomInt() float64 {
 func ChangeInterfaceToSlice(data interface{}) []string {
 	sl := data.([]string)
 	return sl
-}
-
-func GetCallerInfo(skip int) (string, int) {
-	_, file, line, _ := runtime.Caller(10)
-	return file, line
 }
