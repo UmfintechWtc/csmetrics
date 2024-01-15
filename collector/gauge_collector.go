@@ -1,15 +1,9 @@
 package collector
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
-)
+	"sync"
 
-var (
-//	aleradyLabelsValue = map[string][]string{
-//		"netstat": {},
-//		"process": {},
-//		"session": {},
-//	}
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func extractLabels(cmdRes map[string]float64) []string {
@@ -22,6 +16,8 @@ func extractLabels(cmdRes map[string]float64) []string {
 
 // 实现 GaugeCollector 接口方法
 func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdRes map[string]float64, metricType string) {
+	var CVMap sync.Map
+
 	for k, v := range cmdRes {
 		gaugeVec.WithLabelValues(k).Set(v)
 	}
@@ -35,7 +31,7 @@ func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdR
 
 	// 避免map并发写时产生竞争，抛出concurrent map writes异常，并发读不会产生竞争
 	// 这里不使用CVMap.Range是因为遍历整个sync.Map，目标是获取最后层级value
-	lastLabelValues, _ := c.CVMap.Load(metricType)
+	lastLabelValues, _ := CVMap.Load(metricType)
 	if lastLabelValues != nil {
 		for _, v := range lastLabelValues.([]string) {
 			if _, ok := cmdRes[v]; !ok {
@@ -44,6 +40,6 @@ func (c *CollectorValuesImpl) GaugeCollector(gaugeVec *prometheus.GaugeVec, cmdR
 			}
 		}
 	}
-	c.CVMap.Store(metricType, extractLabels(cmdRes))
+	CVMap.Store(metricType, extractLabels(cmdRes))
 
 }
